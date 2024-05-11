@@ -1,87 +1,105 @@
 #include"player.h"
 
-void Player::playerInit(int x, int y){
-    playerSprite.h = 15;
-    playerSprite.w = 15;
+Player::Player(int x,int y, float angle, float turnRate, float moveSpeed){
+    playerSprite.h = 5;
+    playerSprite.w = 5;
     playerSprite.x = x;
     playerSprite.y = y;
-    turnRate = 4;
-    moveSpeed = 5;
-    dx = cos(angle)*moveSpeed;
-    dy = sin(angle)*moveSpeed;
+    this->moveSpeed = moveSpeed;
+    this->turnRate = toRad(turnRate);
+    this->angle = toRad(angle);
 }
 
 void Player::renderPlayer(SDL_Renderer *renderWindow){
     SDL_SetRenderDrawColor(renderWindow,0,255,0,255);
-    SDL_RenderFillRect(renderWindow,&playerSprite);
+    SDL_RenderFillRectF(renderWindow,&playerSprite);
     int x = playerSprite.x+playerSprite.h/2;
     int y = playerSprite.y+playerSprite.w/2;
-    SDL_RenderDrawLine(renderWindow,x,y,x+20*dx,y+20*dy);
+    SDL_RenderDrawLineF(renderWindow,x,y,x+(50*cos(angle)),y+(50*sin(angle)));
 }
 
 void Player::inputHandler(){
     SDL_Event keyE;
     while(SDL_PollEvent(&keyE)){
-        if(keyE.type == SDL_KEYDOWN){
-            if(SDLK_q == keyE.key.keysym.sym){
-                turnDir = 1;
+        const Uint8* currentKeyState = SDL_GetKeyboardState(NULL);
+        switch(keyE.type){
+            case SDL_KEYDOWN:
+                keyHandler.setKeyDown(keyE.key.keysym.sym);
+                break;
+            case SDL_KEYUP:
+                keyHandler.setKeyRelease(keyE.key.keysym.sym);
+                break;
+        }
+        if(!keyHandler.isPressed(SDLK_w) && !keyHandler.isPressed(SDLK_s) ||
+            (keyHandler.isPressed(SDLK_w) && keyHandler.isPressed(SDLK_s))){
+            verticalVel = 0; // Vertically velocity relative to the player's facing direction
+        }else{
+            if(keyHandler.isPressed(SDLK_w)){
+                verticalVel = 1;
             }
-            if(SDLK_e == keyE.key.keysym.sym){
-                turnDir = -1;
-            }
-            if(SDLK_a == keyE.key.keysym.sym){
-                sideOffset = 1;
-                velocity = -1;
-            }
-            if(SDLK_d == keyE.key.keysym.sym){
-                sideOffset = 1;
-                velocity = 1;
-            }
-            if(SDLK_s == keyE.key.keysym.sym){
-                velocity = -1;
-            }
-            if(SDLK_w == keyE.key.keysym.sym){
-                velocity = 1;
+            if(keyHandler.isPressed(SDLK_s)){
+                verticalVel = -1;
             }
         }
-        if(keyE.type == SDL_KEYUP){
-            if(keyE.key.keysym.sym == SDLK_w || 
-               keyE.key.keysym.sym == SDLK_s || 
-               keyE.key.keysym.sym == SDLK_a ||
-               keyE.key.keysym.sym == SDLK_d){
-                velocity = 0;
-                sideOffset = 0;
+        if((!keyHandler.isPressed(SDLK_a) && !keyHandler.isPressed(SDLK_d)) ||
+            (keyHandler.isPressed(SDLK_a) && keyHandler.isPressed(SDLK_d))){
+            horizontalVel = 0;
+        }else{
+            if(keyHandler.isPressed(SDLK_a)){
+                horizontalVel = -1;
             }
-            if(keyE.key.keysym.sym == SDLK_q || 
-               keyE.key.keysym.sym == SDLK_e){
-                turnDir = 0;
+            if(keyHandler.isPressed(SDLK_d)){
+                horizontalVel = 1;
             }
+        }
+        if(!keyHandler.isPressed(SDLK_q) && !keyHandler.isPressed(SDLK_e) ||
+            (keyHandler.isPressed(SDLK_q) && keyHandler.isPressed(SDLK_e))){
+            turnDir = 0;
+        }else{
+            if(keyHandler.isPressed(SDLK_q)){
+                turnDir = 1;
+            }
+            if(keyHandler.isPressed(SDLK_e)){
+                turnDir = -1;
+            }
+        }
+    
+        if(keyHandler.hasKeyEvent()){
+            verticalVel = 0;
+            horizontalVel = 0;
+            turnDir = 0;
         }
     }
 }
 
 void Player::movementHandler(){
     if(turnDir == 1){
-        angle-=turnRate*M_PI/180.0f;
+        angle-=turnRate;
         if(angle < 0){
             angle+=2*M_PI;
         }
     }else if(turnDir == -1){
-        angle+=turnRate*M_PI/180.0f;
+        angle+=turnRate;
         if(angle > 2*M_PI){
             angle-=2*M_PI;
-        }
+        }      
     }
-    dx = cos(angle+(M_PI/2*sideOffset))*moveSpeed;
-    dy = sin(angle+(M_PI/2*sideOffset))*moveSpeed;
 
-    // Play position + offset since the position is from the top left
-    int gridX = floor((playerSprite.x+8+dx*velocity*4)/100);
-    int gridY = floor((playerSprite.y+8+dy*velocity*4)/100);
-    //if(mapData[gridY][gridX] == 1){
-    //    velocity = 0;
-    //}
+    dx = moveSpeed*(verticalVel*cos(angle)+horizontalVel*cos(angle+M_PI/2));
+    dy = moveSpeed*(verticalVel*sin(angle)+horizontalVel*sin(angle+M_PI/2));
 
-    playerSprite.x+=dx*velocity;
-    playerSprite.y+=dy*velocity;
+    playerSprite.x+=dx;
+    playerSprite.y+=dy;
+}
+
+void Player::setMoveSpeed(float moveSpeed){
+    this->moveSpeed = moveSpeed;
+}
+
+void Player::setTurnRate(float turnRate){
+    this->turnRate = turnRate;
+}
+
+void Player::setAngle(float angle){
+    this->angle = angle;
 }

@@ -1,26 +1,25 @@
-#include<iostream>
-#include<vector>
-#include<math.h>
-#include<SDL2/SDL.h>
-
-using namespace std;
+#include"Util.h"
+#include"KeyHandler.h"
 
 class Player{
     private:
-        SDL_Rect playerSprite;
-        SDL_Rect directionLine;
-        int moveSpeed;
-        int turnRate;
-        int velocity;
-        int sideOffset;
-        int dx;
-        int dy;
+        KeyHandler keyHandler;
+        SDL_FRect playerSprite;
+        SDL_FRect directionLine;
+        int verticalVel;
+        int horizontalVel;
         int turnDir;
+        float dx;
+        float dy;
+        float moveSpeed;
+        float turnRate;
         float angle;
     public:
-        void playerInit(int x, int y);
+        Player(int x,int y, float angle, float turnRate, float moveSpeed);
         void renderPlayer(SDL_Renderer *renderWindow);
         void inputHandler();
         void movementHandler();
-        void setX();
+        void setMoveSpeed(float moveSpeed);
+        void setTurnRate(float turnRate);
+        void setAngle(float angle);
 };

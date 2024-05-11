@@ -1,30 +1,20 @@
-#include<iostream>
-#include<SDL2/SDL.h>
-#include"Player.h"
-#include"Maptree.h"
-using namespace std;
+#include"Engine.h"
 
-class Engine{
-    private:
-        SDL_Renderer *renderWindow;
-        Player player;
-        MapTree mapTree;
-    public:
-        void engineInit(SDL_Renderer *renderWindow){
-            this->renderWindow = renderWindow;
-            mapTree.setRenderWindow(renderWindow);
-            mapTree.loadTree("../test/mapData.txt");
-            player.playerInit(400,400);
-        }
-        void inputHandler(){
-            player.inputHandler();
-        }
-        void renderGame(){
-            mapTree.renderVectorMap();
-            player.renderPlayer(renderWindow);
-        }
-        void movementHandler(){
-            player.movementHandler();
-        }
+void Engine::engineInit(SDL_Renderer *renderWindow){
+    this->renderWindow = renderWindow;
+    mapTree.loadTree("../test/mapData.txt");
+    player = new Player(400,400,0,3,1.75);
+}
 
-};
+void Engine::inputHandler(){
+    player->inputHandler();
+}
+
+void Engine::renderGame(){
+    mapTree.renderVectorMap(renderWindow);
+    player->renderPlayer(renderWindow);
+}
+
+void Engine::movementHandler(){
+    player->movementHandler();
+}

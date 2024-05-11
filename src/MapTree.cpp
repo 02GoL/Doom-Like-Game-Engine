@@ -1,9 +1,5 @@
 #include"MapTree.h"
 
-void MapTree::setRenderWindow(SDL_Renderer* renderWindow){
-    this->renderWindow = renderWindow;
-}
-
 void MapTree::loadTree(string mapDataPath){
     map.loadData(mapDataPath);
 
@@ -14,7 +10,6 @@ void MapTree::loadTree(string mapDataPath){
     }
     cout << this->root->height << "\n";
 }
-
 
 Node* MapTree::insertNode(Node* node,Vector* vector){
     if(node == NULL){
@@ -70,14 +65,6 @@ int MapTree::getHeight(Node* node){
     }
 }
 
-int MapTree::getMax(int a, int b){
-    if(a > b){
-        return a;
-    }else{
-        return b;
-    }
-}
-
 int MapTree::getVectorPos(Vector* v1, Vector* v2){ // v1 is the hyper plane vector while v2 is the vector being tested
     int detA = getDet(v1->p1,v1->p2,v2->p1);
     int detB = getDet(v1->p1,v1->p2,v2->p2);
@@ -104,12 +91,6 @@ int MapTree::getVectorPos(Vector* v1, Vector* v2){ // v1 is the hyper plane vect
         return 0; // the vector is colinear
     }
 }
-int MapTree::getDet(Point p1, Point p2, Point p3){
-    return (p2.x-p1.x) * (p3.y-p1.y) - (p3.x-p1.x) * (p2.y-p1.y);
-}
-bool MapTree::checkPoints(Point p1, Point p2){
-    return p1.x == p2.x && p1.y == p2.y;
-}
 
 int MapTree::getPointPos(Vector* v1, Point p){
     int detA = getDet(v1->p1,v1->p2,p);
@@ -125,20 +106,22 @@ int MapTree::getPointPos(Vector* v1, Point p){
         return 0; // the vector is colinear
     }
 }
-void MapTree::renderVectorMap(Node* node){
+
+void MapTree::renderVectorMap(Node* node,SDL_Renderer *renderWindow){
     if(node == NULL){
         return;
     }else{
-        renderVectorMap(node->back);
-        drawVector(node->vectors);
-        renderVectorMap(node->front);
+        renderVectorMap(node->back,renderWindow);
+        drawVector(node->vectors,renderWindow);
+        renderVectorMap(node->front,renderWindow);
     }
 }
-void MapTree::renderVectorMap(){
-    renderVectorMap(this->root);
+
+void MapTree::renderVectorMap(SDL_Renderer *renderWindow){
+    renderVectorMap(this->root,renderWindow);
 }
 
-void MapTree::drawVector(vector<Vector*> vectors){
+void MapTree::drawVector(vector<Vector*> vectors,SDL_Renderer *renderWindow){
     for(Vector* vector:vectors){
         // renders vector
         SDL_RenderDrawLine(renderWindow,vector->p1.x,vector->p1.y,

@@ -12,18 +12,13 @@ class MapTree{
         Node* root;
         Map map;
         vector<Vector*> mapVectors;
-        SDL_Renderer* renderWindow;
         Node* insertNode(Node* node,Vector* vector);
-        void renderVectorMap(Node* node);
+        void renderVectorMap(Node* node,SDL_Renderer *renderWindow);
+        void drawVector(vector<Vector*> vectors,SDL_Renderer *renderWindow);
     public:
-        void setRenderWindow(SDL_Renderer* renderWindow);
         void loadTree(string mapDataPath);
+        void renderVectorMap(SDL_Renderer *renderWindow);
         int getVectorPos(Vector* v1, Vector* v2);
         int getPointPos(Vector* v1, Point p);
-        int getDet(Point p1, Point p2, Point p3);
-        bool checkPoints(Point p1, Point p2);
         int getHeight(Node* node);
-        int getMax(int a, int b);
-        void renderVectorMap();
-        void drawVector(vector<Vector*> vectors);
 };
