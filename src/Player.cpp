@@ -5,17 +5,10 @@ Player::Player(int x,int y, float angle, float turnRate, float moveSpeed){
     playerSprite.w = 5;
     playerSprite.x = x;
     playerSprite.y = y;
+    this->fov = toRad(90)/2;
     this->moveSpeed = moveSpeed;
     this->turnRate = toRad(turnRate);
     this->angle = toRad(angle);
-}
-
-void Player::renderPlayer(SDL_Renderer *renderWindow){
-    SDL_SetRenderDrawColor(renderWindow,0,255,0,255);
-    SDL_RenderFillRectF(renderWindow,&playerSprite);
-    int x = playerSprite.x+playerSprite.h/2;
-    int y = playerSprite.y+playerSprite.w/2;
-    SDL_RenderDrawLineF(renderWindow,x,y,x+(50*cos(angle)),y+(50*sin(angle)));
 }
 
 void Player::inputHandler(){
@@ -74,22 +67,22 @@ void Player::inputHandler(){
 
 void Player::movementHandler(){
     if(turnDir == 1){
-        angle-=turnRate;
+        angle -= turnRate;
         if(angle < 0){
-            angle+=2*M_PI;
+            angle += 2*M_PI;
         }
     }else if(turnDir == -1){
-        angle+=turnRate;
-        if(angle > 2*M_PI){
-            angle-=2*M_PI;
+        angle += turnRate;
+        if(angle >= 2*M_PI){
+            angle -= 2*M_PI;
         }      
     }
 
     dx = moveSpeed*(verticalVel*cos(angle)+horizontalVel*cos(angle+M_PI/2));
     dy = moveSpeed*(verticalVel*sin(angle)+horizontalVel*sin(angle+M_PI/2));
 
-    playerSprite.x+=dx;
-    playerSprite.y+=dy;
+    playerSprite.x += dx;
+    playerSprite.y += dy;
 }
 
 void Player::setMoveSpeed(float moveSpeed){
@@ -102,4 +95,56 @@ void Player::setTurnRate(float turnRate){
 
 void Player::setAngle(float angle){
     this->angle = angle;
+}
+
+Point Player::getPosition(){
+    Point playerPosition;
+    playerPosition.x = playerSprite.x;
+    playerPosition.y = playerSprite.y;
+    return playerPosition;
+}
+
+bool Player::inFOV(Vector* vector){
+    Point facingPoint;
+    facingPoint.x = playerSprite.x+cos(angle);
+    facingPoint.y = playerSprite.y+sin(angle);
+    facingPoint = getIntersection(vector,getPosition(),facingPoint);
+
+    float theta = atan2(facingPoint.y-playerSprite.y,facingPoint.x-playerSprite.x);
+    float alpha = atan2(vector->p1.y-playerSprite.y,vector->p1.x-playerSprite.x);
+    float beta = atan2(vector->p2.y-playerSprite.y,vector->p2.x-playerSprite.x);
+    if(theta < 0){
+        theta += 2*M_PI;
+    }
+    if(alpha < 0){
+        alpha += 2*M_PI;
+    }
+    if(beta < 0){
+        beta += 2*M_PI;
+    }
+
+    float upper = angle+fov;
+    float lower = angle-fov;
+    if(upper > 2*M_PI){
+        upper -= 2*M_PI;
+    }
+    if(lower < 0){
+        lower += 2*M_PI;
+    }
+
+    if(((facingPoint.x >= vector->p1.x-eps && facingPoint.x <= vector->p2.x+eps) || 
+    (facingPoint.x >= vector->p2.x-eps && facingPoint.x <= vector->p1.x+eps)) &&
+    ((facingPoint.y >= vector->p1.y-eps && facingPoint.y <= vector->p2.y+eps) || 
+    (facingPoint.y >= vector->p2.y-eps && facingPoint.y <= vector->p1.y+eps)) &&
+    (theta <= angle+eps && theta >= angle-eps)){
+        return true;
+    }
+    if(angle < fov || angle > 2*M_PI-fov){
+        if(alpha <= upper || alpha >= lower || beta <= upper || beta >= lower){
+            return true;
+        }
+    }else if((alpha <= upper && alpha >= lower) || (beta <= upper && beta >= lower)){
+        return true;
+    }
+    return false;
 }

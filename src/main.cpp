@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Window *frame = NULL;
+Window* frame = NULL;
 
 int main(int argc, char* argv[]){
     Uint32 frameStart;

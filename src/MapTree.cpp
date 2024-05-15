@@ -11,7 +11,7 @@ void MapTree::loadTree(string mapDataPath){
     cout << this->root->height << "\n";
 }
 
-Node* MapTree::insertNode(Node* node,Vector* vector){
+Node* MapTree::insertNode(Node* node, Vector* vector){
     if(node == NULL){
         Node* newNode = new Node;
         newNode->vectors.push_back(vector);
@@ -20,14 +20,14 @@ Node* MapTree::insertNode(Node* node,Vector* vector){
     }
     int position = getVectorPos(node->vectors.at(0),vector);
     if(position == 1){
-        cout << "Added to front\n";
+        //cout << "Added to front\n";
         node->front = insertNode(node->front,vector);
     }else if(position == 2){
-        cout << "Added to back\n";
+        //cout << "Added to back\n";
         node->back = insertNode(node->back,vector);
     }else if(position == 3){
-        cout << "Split line\n";
-        Point splitPoint = getItersection(node->vectors.at(0),vector);
+        //cout << "Split line\n";
+        Point splitPoint = getIntersection(node->vectors.at(0),vector);
 
         Vector* v1 = new Vector;
         v1->p1 = vector->p1;
@@ -66,16 +66,9 @@ int MapTree::getHeight(Node* node){
 }
 
 int MapTree::getVectorPos(Vector* v1, Vector* v2){ // v1 is the hyper plane vector while v2 is the vector being tested
-    int detA = getDet(v1->p1,v1->p2,v2->p1);
-    int detB = getDet(v1->p1,v1->p2,v2->p2);
-    /*
-    if(!checkPoints(v1->p1,v2->p1) && !checkPoints(v1->p2,v2->p1)){
-        detA = getDet(v1->p1,v1->p2,v2->p1);
-    }
-    if(!checkPoints(v1->p1,v2->p2) && !checkPoints(v1->p2,v2->p2)){
-        detB = getDet(v1->p1,v1->p2,v2->p2);
-    }
-    */
+    float detA = getDet(v1->p1,v1->p2,v2->p1);
+    float detB = getDet(v1->p1,v1->p2,v2->p2);
+
     if(v1->facingDir == 0){
         detA = -detA;
         detB = -detB;
@@ -93,41 +86,47 @@ int MapTree::getVectorPos(Vector* v1, Vector* v2){ // v1 is the hyper plane vect
 }
 
 int MapTree::getPointPos(Vector* v1, Point p){
-    int detA = getDet(v1->p1,v1->p2,p);
+    float detA = getDet(v1->p1,v1->p2,p);
     if(v1->facingDir == 0){
         detA = -detA;
     }
 
-    if(detA >= 0){
+    if(detA > 0){
         return 1; // both points are on the back side 
-    }else if(detA <= 0){
+    }else if(detA < 0){
         return 2; // both points are on the front side
     }else{
         return 0; // the vector is colinear
     }
 }
 
-void MapTree::renderVectorMap(Node* node,SDL_Renderer *renderWindow){
+queue<Vector*> MapTree::getRenderOrder(Point playerPosition, float angle){
+    queue<Vector*> vectorList;
+    getRenderOrder(this->root,vectorList,playerPosition);
+    return vectorList;
+}
+
+// might want to improve this so it doesn't need vector list as an input/have it return something other than void
+void MapTree::getRenderOrder(Node* node, queue<Vector*>& vectorList, Point playerPosition){
     if(node == NULL){
         return;
     }else{
-        renderVectorMap(node->back,renderWindow);
-        drawVector(node->vectors,renderWindow);
-        renderVectorMap(node->front,renderWindow);
-    }
-}
-
-void MapTree::renderVectorMap(SDL_Renderer *renderWindow){
-    renderVectorMap(this->root,renderWindow);
-}
-
-void MapTree::drawVector(vector<Vector*> vectors,SDL_Renderer *renderWindow){
-    for(Vector* vector:vectors){
-        // renders vector
-        SDL_RenderDrawLine(renderWindow,vector->p1.x,vector->p1.y,
-                            vector->p2.x,vector->p2.y);
-        // renders normal
-        SDL_RenderDrawLine(renderWindow,vector->midPoint.x,vector->midPoint.y,
-                            vector->normal.x,vector->normal.y);
+        int position = getPointPos(node->vectors.at(0),playerPosition);
+        if(position == 1){ // back
+            getRenderOrder(node->front,vectorList,playerPosition);
+            for(Vector* vector:node->vectors){
+                vectorList.push(vector);
+            }
+            getRenderOrder(node->back, vectorList,playerPosition);
+        }else if(position == 2){ // front
+            getRenderOrder(node->back, vectorList,playerPosition);
+            for(Vector* vector:node->vectors){
+                vectorList.push(vector);
+            }
+            getRenderOrder(node->front,vectorList,playerPosition);
+        }else{ // colinear
+            getRenderOrder(node->front,vectorList,playerPosition);
+            getRenderOrder(node->back,vectorList,playerPosition);
+        }
     }
 }

@@ -9,6 +9,8 @@ class Player{
         int verticalVel;
         int horizontalVel;
         int turnDir;
+        float screenSize;
+        float fov;
         float dx;
         float dy;
         float moveSpeed;
@@ -16,10 +18,14 @@ class Player{
         float angle;
     public:
         Player(int x,int y, float angle, float turnRate, float moveSpeed);
-        void renderPlayer(SDL_Renderer *renderWindow);
         void inputHandler();
         void movementHandler();
         void setMoveSpeed(float moveSpeed);
         void setTurnRate(float turnRate);
         void setAngle(float angle);
+        float getAngle(){return angle;}
+        float getFov(){return fov;}
+        Point getPosition();
+        SDL_FRect getPlayerSprite(){return playerSprite;}
+        bool inFOV(Vector* vector);
 };

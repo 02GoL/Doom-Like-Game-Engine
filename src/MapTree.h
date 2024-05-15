@@ -12,13 +12,12 @@ class MapTree{
         Node* root;
         Map map;
         vector<Vector*> mapVectors;
-        Node* insertNode(Node* node,Vector* vector);
-        void renderVectorMap(Node* node,SDL_Renderer *renderWindow);
-        void drawVector(vector<Vector*> vectors,SDL_Renderer *renderWindow);
+        Node* insertNode(Node* node, Vector* vector);
+        void getRenderOrder(Node* node, queue<Vector*>& vectorList, Point playerPosition);
     public:
         void loadTree(string mapDataPath);
-        void renderVectorMap(SDL_Renderer *renderWindow);
         int getVectorPos(Vector* v1, Vector* v2);
         int getPointPos(Vector* v1, Point p);
         int getHeight(Node* node);
+        queue<Vector*> getRenderOrder(Point playerPosition, float angle);
 };

@@ -7,12 +7,15 @@ using namespace std;
 
 class Engine{
     private:
-        SDL_Renderer *renderWindow;
-        Player *player;
+        SDL_Renderer* renderWindow;
+        Player* player;
         MapTree mapTree;
+        bool b = false;
     public:
-        void engineInit(SDL_Renderer *renderWindow);
+        void engineInit(SDL_Renderer* renderWindow);
         void inputHandler();
         void renderGame();
         void movementHandler();
+        void renderMap();
+        void renderPlayer();
 };

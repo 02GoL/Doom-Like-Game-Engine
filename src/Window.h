@@ -6,10 +6,10 @@ using namespace std;
 
 class Window{
     private:
-        SDL_Window *window;
-        SDL_Renderer *renderer;
+        SDL_Window* window;
+        SDL_Renderer* renderer;
         Engine gameEngine;
-        const char *title = "Engine Window";
+        const char* title = "Engine Window";
         int xDim;
         int yDim;
         bool isRunning;

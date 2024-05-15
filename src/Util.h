@@ -4,14 +4,17 @@
 #include<sstream>
 #include<fstream>
 #include<math.h>
+#include<queue>
+#define eps 0.01
+
 #pragma once
 
 using namespace std;
 
 struct Point{
-    int x;
-    int y;
-    int z;
+    float x;
+    float y;
+    float z;
 };
 
 struct Vector{
@@ -25,7 +28,8 @@ struct Vector{
 
 float toRad(float angle);
 int getMax(int a, int b);
-int getDet(Point p1, Point p2, Point p3);
+float getDet(Point p1, Point p2, Point p3);
 void setMidPoint(Vector* vector);
 void setNormal(Vector* vector);
-Point getItersection(Vector* v1, Vector* v2);
+Point getIntersection(Vector* v1, Vector* v2);
+Point getIntersection(Vector* v1, Point p, Point p1);
