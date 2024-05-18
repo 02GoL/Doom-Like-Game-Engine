@@ -1,9 +1,8 @@
 #include"MapTree.h"
 
-void MapTree::loadTree(string mapDataPath){
-    map.loadData(mapDataPath);
-
-    this->mapVectors = map.getMapVectors();
+void MapTree::loadFrom(string mapDataPath){
+    this->root = NULL;
+    this->mapVectors = map.loadData(mapDataPath);
     while(!mapVectors.empty()){
         cout << "Added vector " << mapVectors.front()->index << " at " << mapVectors.front()->p1.x <<  ", "<< mapVectors.front()->p1.y << " to " << mapVectors.front()->p2.x <<  ", "<< mapVectors.front()->p2.y << "\n";
         this->root = insertNode(root,mapVectors.front());
@@ -20,13 +19,13 @@ Node* MapTree::insertNode(Node* node, Vector* vector){
     }
     int position = getVectorPos(node->vectors.at(0),vector);
     if(position == 1){
-        //cout << "Added to front\n";
+        cout << "Added to front\n";
         node->front = insertNode(node->front,vector);
     }else if(position == 2){
-        //cout << "Added to back\n";
+        cout << "Added to back\n";
         node->back = insertNode(node->back,vector);
     }else if(position == 3){
-        //cout << "Split line\n";
+        cout << "Split line\n";
         Point splitPoint = getIntersection(node->vectors.at(0),vector);
 
         Vector* v1 = new Vector;
@@ -101,32 +100,32 @@ int MapTree::getPointPos(Vector* v1, Point p){
 }
 
 queue<Vector*> MapTree::getRenderOrder(Point playerPosition, float angle){
-    queue<Vector*> vectorList;
-    getRenderOrder(this->root,vectorList,playerPosition);
-    return vectorList;
+    queue<Vector*> renderQueue;
+    getRenderOrder(this->root,renderQueue,playerPosition);
+    return renderQueue;
 }
 
 // might want to improve this so it doesn't need vector list as an input/have it return something other than void
-void MapTree::getRenderOrder(Node* node, queue<Vector*>& vectorList, Point playerPosition){
+void MapTree::getRenderOrder(Node* node, queue<Vector*>& renderQueue, Point playerPosition){
     if(node == NULL){
         return;
     }else{
         int position = getPointPos(node->vectors.at(0),playerPosition);
         if(position == 1){ // back
-            getRenderOrder(node->front,vectorList,playerPosition);
+            getRenderOrder(node->front,renderQueue,playerPosition);
             for(Vector* vector:node->vectors){
-                vectorList.push(vector);
+                renderQueue.push(vector);
             }
-            getRenderOrder(node->back, vectorList,playerPosition);
+            getRenderOrder(node->back, renderQueue,playerPosition);
         }else if(position == 2){ // front
-            getRenderOrder(node->back, vectorList,playerPosition);
+            getRenderOrder(node->back, renderQueue,playerPosition);
             for(Vector* vector:node->vectors){
-                vectorList.push(vector);
+                renderQueue.push(vector);
             }
-            getRenderOrder(node->front,vectorList,playerPosition);
+            getRenderOrder(node->front,renderQueue,playerPosition);
         }else{ // colinear
-            getRenderOrder(node->front,vectorList,playerPosition);
-            getRenderOrder(node->back,vectorList,playerPosition);
+            getRenderOrder(node->front,renderQueue,playerPosition);
+            getRenderOrder(node->back,renderQueue,playerPosition);
         }
     }
 }

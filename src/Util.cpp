@@ -7,8 +7,36 @@ float toRad(float angle){
     return angle*M_PI/180.0f;
 }
 
+float pytha(float a, float b){
+    return sqrt(pow(a,2)+pow(b,2));
+}
+
 int getMax(int a, int b){
-    if(a > b){
+    if(a >= b){
+        return a;
+    }else{
+        return b;
+    }
+}
+
+int getMin(int a, int b){
+    if(a < b){
+        return a;
+    }else{
+        return b;
+    }
+}
+
+float getMaxF(float a, float b){
+    if(a >= b){
+        return a;
+    }else{
+        return b;
+    }
+}
+
+float getMinF(float a, float b){
+    if(a < b){
         return a;
     }else{
         return b;
@@ -17,6 +45,26 @@ int getMax(int a, int b){
 
 float getDet(Point p1, Point p2, Point p3){
     return (p2.x-p1.x)*(p3.y-p1.y)-(p3.x-p1.x)*(p2.y-p1.y);
+}
+
+float getAngleDiff(float theta, float beta){
+    float diff = fmod(beta-theta+M_PI,2*M_PI);
+    if(diff < 0){
+        diff += 2*M_PI;
+    }
+    return abs(diff-M_PI);
+}
+
+float normalizeAngle(float angle){
+    angle = fmod(angle,2*M_PI);
+    if(angle < 0){
+        angle += 2*M_PI;
+    }
+    return angle;
+}
+
+bool inTargetAngle(float angle, float lowerAngle, float upperAngle, float range){
+    return getAngleDiff(angle,lowerAngle) <= range && getAngleDiff(angle,upperAngle) <= range;
 }
 
 void setMidPoint(Vector* vector){
@@ -77,4 +125,15 @@ Point getIntersection(Vector* v1, Point p1, Point p2){
     newPoint.x = x;
     newPoint.y = y;
     return newPoint;
+}
+
+bool onLine(Vector* vector, Point point){
+    if(((point.x >= vector->p1.x-eps && point.x <= vector->p2.x+eps) || 
+    (point.x >= vector->p2.x-eps && point.x <= vector->p1.x+eps)) &&
+    ((point.y >= vector->p1.y-eps && point.y <= vector->p2.y+eps) || 
+    (point.y >= vector->p2.y-eps && point.y <= vector->p1.y+eps))){
+        return true;
+    }else{
+        return false;
+    }
 }

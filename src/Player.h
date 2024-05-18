@@ -27,5 +27,4 @@ class Player{
         float getFov(){return fov;}
         Point getPosition();
         SDL_FRect getPlayerSprite(){return playerSprite;}
-        bool inFOV(Vector* vector);
 };

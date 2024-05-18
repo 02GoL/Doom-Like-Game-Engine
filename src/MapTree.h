@@ -1,4 +1,4 @@
-#include"map.h"
+#include"Maploader.h"
 
 struct Node{
     vector<Vector*> vectors;
@@ -10,12 +10,12 @@ struct Node{
 class MapTree{
     private:
         Node* root;
-        Map map;
+        Maploader map;
         vector<Vector*> mapVectors;
         Node* insertNode(Node* node, Vector* vector);
-        void getRenderOrder(Node* node, queue<Vector*>& vectorList, Point playerPosition);
+        void getRenderOrder(Node* node, queue<Vector*>& renderQueue, Point playerPosition);
     public:
-        void loadTree(string mapDataPath);
+        void loadFrom(string mapDataPath);
         int getVectorPos(Vector* v1, Vector* v2);
         int getPointPos(Vector* v1, Point p);
         int getHeight(Node* node);

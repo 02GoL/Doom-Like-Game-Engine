@@ -1,6 +1,5 @@
 #include<iostream>
 #include<SDL2/SDL.h>
-#include"Engine.h"
 
 using namespace std;
 
@@ -8,16 +7,12 @@ class Window{
     private:
         SDL_Window* window;
         SDL_Renderer* renderer;
-        Engine gameEngine;
         const char* title = "Engine Window";
-        int xDim;
-        int yDim;
-        bool isRunning;
+        bool running;
     public: 
-        void init(int xDim, int yDim);
+        Window(int xDim, int yDim);
         void eventHandler();
-        void render();
         void clean();
-        void update();
-        bool running();
+        bool isRunning();
+        SDL_Renderer* getRenderWindow();
 };

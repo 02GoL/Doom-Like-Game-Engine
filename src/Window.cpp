@@ -1,9 +1,6 @@
 #include"window.h"
 
-void Window::init(int xDim,int yDim){
-    this->xDim = xDim;
-    this->yDim = yDim;
-
+Window::Window(int xDim, int yDim){
     if(SDL_Init(SDL_INIT_EVERYTHING) == 0){
         cout << "Initializing...\n";
         window = SDL_CreateWindow(title,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,xDim,yDim,SDL_WINDOW_SHOWN);
@@ -16,11 +13,9 @@ void Window::init(int xDim,int yDim){
             SDL_SetRenderDrawColor(renderer,0,0,0,255);
             cout << "Render Created...\n";
         }
-        gameEngine.engineInit(renderer);
-
-        isRunning = true;
+        running = true;
     }else{
-        isRunning = false;
+        running = false;
     }
 }
 
@@ -28,20 +23,10 @@ void Window::eventHandler(){
     SDL_Event event;
     while(SDL_PollEvent(&event)){
         if(event.type == SDL_QUIT){
-            isRunning = false;
+            running = false;
         }
         SDL_PushEvent(&event);
     }
-    gameEngine.inputHandler();
-}
-
-void Window::render(){
-    SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer,255,255,255,255);
-    gameEngine.renderGame();
-
-    SDL_SetRenderDrawColor(renderer,0,0,0,255);
-    SDL_RenderPresent(renderer);
 }
 
 void Window::clean(){
@@ -51,10 +36,10 @@ void Window::clean(){
     cout << "System Quit...\n";
 }
 
-void Window::update(){
-    gameEngine.movementHandler();
+bool Window::isRunning(){
+    return running;
 }
 
-bool Window::running(){
-    return isRunning;
-}
+SDL_Renderer* Window::getRenderWindow(){
+    return renderer;
+};

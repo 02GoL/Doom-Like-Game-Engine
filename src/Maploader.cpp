@@ -1,6 +1,6 @@
-#include"map.h"
+#include"Maploader.h"
 
-void Map::loadData(string mapDataPath){
+vector<Vector*> Maploader::loadData(string mapDataPath){
     ifstream myFile(mapDataPath);
     string str;
     int i = 1;
@@ -34,4 +34,5 @@ void Map::loadData(string mapDataPath){
         cout << "Unable to open file...\n";
     }
     myFile.close();
+    return vectors;
 }
