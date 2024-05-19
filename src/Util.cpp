@@ -63,8 +63,13 @@ float normalizeAngle(float angle){
     return angle;
 }
 
-bool inTargetAngle(float angle, float lowerAngle, float upperAngle, float range){
-    return getAngleDiff(angle,lowerAngle) <= range && getAngleDiff(angle,upperAngle) <= range;
+bool inAngleRange(float angle, float lowerAngleBound, float upperAnglerBound){
+    float range = getAngleDiff(lowerAngleBound,upperAnglerBound)+eps;
+    return getAngleDiff(angle,lowerAngleBound) <= range && getAngleDiff(angle,upperAnglerBound) <= range;
+}
+
+bool inRange(float x, float boundA, float boundB){
+    return x >= getMinF(boundA,boundB)-eps && x <= getMaxF(boundA,boundB)+eps;
 }
 
 void setMidPoint(Vector* vector){

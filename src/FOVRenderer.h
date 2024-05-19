@@ -14,5 +14,6 @@ class FOVRenderer{
         void renderFOV(queue<Vector*> renderQueue, Point playerPosition, float playerAngle);
         bool inFOV(Vector* vector, Point playerPosition, float playerAngle);
         void renderWalll(Vector* vector, Point playerPosition, float playerAngle);
-        void drawClipWall(float a, float b);
+        void drawClipWall(float a, float b, float c, float d);
+        Point setPoint(Vector* vector, Point playerPosition, float angle);
 };
