@@ -26,8 +26,7 @@ Node* MapTree::insertNode(Node* node, Vector* vector){
         node->back = insertNode(node->back,vector);
     }else if(position == 3){
         cout << "Split line\n";
-        Point splitPoint = getIntersection(node->vectors.at(0),vector);
-
+        Point splitPoint = intersectingPoint(node->vectors.at(0),vector);
         Vector* v1 = new Vector;
         v1->p1 = vector->p1;
         v1->p2 = splitPoint;
@@ -35,7 +34,6 @@ Node* MapTree::insertNode(Node* node, Vector* vector){
         v1->facingDir = vector->facingDir;
         setMidPoint(v1);
         setNormal(v1);
-
         Vector* v2 = new Vector;
         v2->p1 = splitPoint;
         v2->p2 = vector->p2;
@@ -43,7 +41,6 @@ Node* MapTree::insertNode(Node* node, Vector* vector){
         v2->facingDir = vector->facingDir;
         setMidPoint(v2);
         setNormal(v2);
-
         mapVectors.push_back(v1);
         mapVectors.push_back(v2);
         mapVectors.erase(mapVectors.begin());
@@ -67,12 +64,10 @@ int MapTree::getHeight(Node* node){
 int MapTree::getVectorPos(Vector* v1, Vector* v2){ // v1 is the hyper plane vector while v2 is the vector being tested
     float detA = getDet(v1->p1,v1->p2,v2->p1);
     float detB = getDet(v1->p1,v1->p2,v2->p2);
-
     if(v1->facingDir == 0){
         detA = -detA;
         detB = -detB;
     }
-
     if(detA > 0 && detB >= 0 || detA >= 0 && detB > 0){
         return 1; // both points are on the back side 
     }else if(detA < 0 && detB <= 0 || detA <= 0 && detB < 0){
@@ -89,7 +84,6 @@ int MapTree::getPointPos(Vector* v1, Point p){
     if(v1->facingDir == 0){
         detA = -detA;
     }
-
     if(detA > 0){
         return 1; // both points are on the back side 
     }else if(detA < 0){

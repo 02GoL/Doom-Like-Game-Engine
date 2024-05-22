@@ -40,7 +40,7 @@ bool FOVRenderer::inFOV(Vector* vector, Point playerPosition, float playerAngle)
 
     facingPoint.x += cos(angle);
     facingPoint.y += sin(angle);
-    facingPoint = getIntersection(vector,playerPosition,facingPoint);
+    facingPoint = intersectingPoint(vector,playerPosition,facingPoint);
 
     float theta = normalizeAngle(atan2(facingPoint.y-y,facingPoint.x-x)); // angle for a point infront
     float alpha = normalizeAngle(atan2(vector->p1.y-y,vector->p1.x-x)); // angle for the point p1
@@ -73,62 +73,37 @@ void FOVRenderer::renderWalll(Vector* vector, Point playerPosition, float player
     screenVector->p2.y += hyp*sin(upperAngle);
     
     // gets the intersect of both end points to a vector and angle relative of the player
-    Point pointA = getIntersection(screenVector,playerPoint,vector->p1); 
-    Point pointB = getIntersection(screenVector,playerPoint,vector->p2); 
-    float thetaA = normalizeAngle(atan2(vector->p1.y-playerPoint.y,vector->p1.x-playerPoint.x));
-    float thetaB = normalizeAngle(atan2(vector->p2.y-playerPoint.y,vector->p2.x-playerPoint.x));
-    
+    Point pointA = vector->p1;
+    Point pointB = vector->p2;
+    float thetaA = normalizeAngle(atan2(pointA.y-playerPoint.y,pointA.x-playerPoint.x));
+    float thetaB = normalizeAngle(atan2(pointB.y-playerPoint.y,pointB.x-playerPoint.x));
+        
+    // from the inital 2 points, the following will determine where the points end up on the
+    // players fov projected on the screen
     if(!inAngleRange(thetaA,lowerAngle,upperAngle) && !inAngleRange(thetaB,lowerAngle,upperAngle)){
         // if both points are outside the fov reset both points to be the sides of the fov
-        pointA = setPoint(vector,playerPoint,lowerAngle);
-        pointB = setPoint(vector,playerPoint,upperAngle);
+        pointA = intersectingPoint(vector,playerPoint,lowerAngle);
+        pointB = intersectingPoint(vector,playerPoint,upperAngle);
         thetaA = normalizeAngle(atan2(pointA.y-playerPoint.y,pointA.x-playerPoint.x));
         thetaB = normalizeAngle(atan2(pointB.y-playerPoint.y,pointB.x-playerPoint.x));
         SDL_SetRenderDrawColor(renderWindow,255,255,255,255);
     }else if(inAngleRange(thetaA,lowerAngle,upperAngle) && !inAngleRange(thetaB,lowerAngle,upperAngle)){
-        /*
-        if the angle of pointA relative the the player is in the fov and pointB isn't
-        recalculate pointB to the either the lower or upper bound of the fov that is 
-        */
-        if(getAngleDiff(thetaB,lowerAngle) < getAngleDiff(thetaB,upperAngle)){
-            pointB = setPoint(vector,playerPoint,lowerAngle);
+        if(isIntersectingSeg(vector,playerPosition,upperAngle) && !isIntersectingSeg(vector,playerPosition,lowerAngle)){
+            pointB = intersectingPoint(vector,playerPoint,upperAngle);
         }else{
-            pointB = setPoint(vector,playerPoint,upperAngle);
+            pointB = intersectingPoint(vector,playerPoint,lowerAngle);
         }
         thetaB = normalizeAngle(atan2(pointB.y-playerPoint.y,pointB.x-playerPoint.x));
         SDL_SetRenderDrawColor(renderWindow,230,173,230,255);
     }else if(inAngleRange(thetaB,lowerAngle,upperAngle) && !inAngleRange(thetaA,lowerAngle,upperAngle)){
-        /*
-        if the angle of pointB relative the the player is in the fov and pointA isn't
-        recalculate pointA to the either the lower or upper bound of the fov
-        */
-        if(getAngleDiff(thetaA,lowerAngle) < getAngleDiff(thetaB,upperAngle)){
-            pointA = setPoint(vector,playerPoint,lowerAngle);
+        if(isIntersectingSeg(vector,playerPosition,lowerAngle) && !isIntersectingSeg(vector,playerPosition,upperAngle)){
+            pointA = intersectingPoint(vector,playerPoint,lowerAngle);
         }else{
-            pointA = setPoint(vector,playerPoint,upperAngle);
+            pointA = intersectingPoint(vector,playerPoint,upperAngle);
         }
         thetaA = normalizeAngle(atan2(pointA.y-playerPoint.y,pointA.x-playerPoint.x));
         SDL_SetRenderDrawColor(renderWindow,255,0,0,255);
     }
-    /*
-    after finding the point of interest in the fov get the intersecting points 
-    from the player to the found point with the screen projected by the player
-    */
-
-    float a = pytha(vector->p1.x-playerPoint.x,vector->p1.y-playerPoint.y)*cos(thetaA);
-    float b = pytha(pointA.x-playerPoint.x,pointA.y-playerPoint.y)*cos(thetaA);
-    float c = pytha(vector->p2.x-playerPoint.x,vector->p2.y-playerPoint.y)*cos(thetaB);
-    float d = pytha(pointB.x-playerPoint.x,pointB.y-playerPoint.y)*cos(thetaB);
-    float lowerLineH = 100*screenSizeY/a;
-    float upperLineH = 100*screenSizeY/c;
-    
-    if(lowerLineH < 550){
-        lowerLineH = 550;
-    }
-    if(upperLineH < 550){
-        upperLineH = 550;
-    }
-    
     /*
     SDL_RenderDrawLine(renderWindow,playerPoint.x+2,playerPoint.y+2,
                             pointA.x,pointA.y);
@@ -136,21 +111,38 @@ void FOVRenderer::renderWalll(Vector* vector, Point playerPosition, float player
     SDL_RenderDrawLine(renderWindow,playerPoint.x+2,playerPoint.y+2,
                             pointB.x,pointB.y);
     */
-    pointA = getIntersection(screenVector,playerPoint,pointA);
-    pointB = getIntersection(screenVector,playerPoint,pointB); 
+    float aDist = pytha(pointA.x-playerPoint.x,pointA.y-playerPoint.y);
+    float bDist = pytha(pointB.x-playerPoint.x,pointB.y-playerPoint.y);
     
+    
+    pointA = intersectingPoint(screenVector,playerPoint,pointA);
+    pointB = intersectingPoint(screenVector,playerPoint,pointB); 
+    
+    SDL_RenderDrawLine(renderWindow,playerPoint.x,playerPoint.y,
+                            pointA.x,pointA.y);
+                     
+    SDL_RenderDrawLine(renderWindow,playerPoint.x,playerPoint.y,
+                            pointB.x,pointB.y);
+    
+    float ca = normalizeAngle(angle-lowerAngle);
+    float cb = normalizeAngle(angle-upperAngle);
+    //float a = pytha(vector->p1.x-playerPoint.x,vector->p1.y-playerPoint.y);
+    float aScreenDist = pytha(pointA.x-playerPoint.x,pointA.y-playerPoint.y);
+    //float c = pytha(vector->p2.x-playerPoint.x,vector->p2.y-playerPoint.y);
+    float bScreenDist = pytha(pointB.x-playerPoint.x,pointB.y-playerPoint.y);
+    float aPointScale = screenSizeY*(aScreenDist/aDist);
+    float bPointScale = screenSizeY*(bScreenDist/bDist);
 
-    float lowerScreenPoint = pytha(pointA.x-screenVector->p1.x,pointA.y-screenVector->p1.y);
-    float upperScreenPoint = pytha(pointB.x-screenVector->p1.x,pointB.y-screenVector->p1.y)-1;      
-    drawClipWall(lowerScreenPoint,upperScreenPoint,lowerLineH,upperLineH);
-}
-
-Point FOVRenderer::setPoint(Vector* vector, Point playerPosition, float angle){
-    Point p = playerPosition;
-    p.x += cos(angle);
-    p.y += sin(angle);
-    p = getIntersection(vector,playerPosition,p);
-    return p;
+    if(aPointScale < 50){
+        aPointScale = 50;
+    }
+    if(bPointScale < 50){
+        bPointScale = 50;
+    }
+    
+    float screenPointA = pytha(pointA.x-screenVector->p1.x,pointA.y-screenVector->p1.y);
+    float screenPointB = pytha(pointB.x-screenVector->p1.x,pointB.y-screenVector->p1.y)-1;      
+    drawClipWall(screenPointA,screenPointB,aPointScale,bPointScale);
 }
 
 void FOVRenderer::drawClipWall(float a, float b, float c, float d){
@@ -161,11 +153,11 @@ void FOVRenderer::drawClipWall(float a, float b, float c, float d){
         vector->p1.x = lowerX;
         vector->p2.x = upperX;
         coveringVectors.push_back(vector);
-        SDL_RenderDrawLine(renderWindow,vector->p1.x,0,
-                            vector->p1.x,c);
+        SDL_RenderDrawLine(renderWindow,vector->p1.x,screenSizeY/2-c,
+                            vector->p1.x,screenSizeY/2+c);
                             
-        SDL_RenderDrawLine(renderWindow,vector->p2.x,0,
-                            vector->p2.x,d);
+        SDL_RenderDrawLine(renderWindow,vector->p2.x,screenSizeY/2-d,
+                            vector->p2.x,screenSizeY/2+d);
     }else{
         for(Vector* v:coveringVectors){
             if(!inRange(lowerX,v->p1.x,v->p2.x) && !inRange(upperX,v->p1.x,v->p2.x)){
@@ -176,16 +168,16 @@ void FOVRenderer::drawClipWall(float a, float b, float c, float d){
                 // replace values
                 v->p1.x = lowerX;
                 SDL_SetRenderDrawColor(renderWindow,0,0,255,255);
-                SDL_RenderDrawLine(renderWindow,v->p1.x,0,
-                            v->p1.x,c);
+                SDL_RenderDrawLine(renderWindow,v->p1.x,screenSizeY/2-c,
+                            v->p1.x,screenSizeY/2+c);
                 
                 return;
             }else if(inRange(lowerX,v->p1.x,v->p2.x) && !inRange(upperX,v->p1.x,v->p2.x)){
                 v->p2.x = upperX;
                 SDL_SetRenderDrawColor(renderWindow,230,173,230,255);
                 
-                SDL_RenderDrawLine(renderWindow,v->p2.x,0,
-                            v->p2.x,d);
+                SDL_RenderDrawLine(renderWindow,v->p2.x,screenSizeY/2-d,
+                            v->p2.x,screenSizeY/2+d);
                 return;
             }
         }
@@ -194,10 +186,10 @@ void FOVRenderer::drawClipWall(float a, float b, float c, float d){
         vector->p1.x = lowerX;
         vector->p2.x = upperX;
         coveringVectors.push_back(vector);
-        SDL_RenderDrawLine(renderWindow,vector->p1.x,0,
-                            vector->p1.x,c);
+        SDL_RenderDrawLine(renderWindow,vector->p1.x,screenSizeY/2-c,
+                            vector->p1.x,screenSizeY/2+c);
                             
-        SDL_RenderDrawLine(renderWindow,vector->p2.x,0,
-                            vector->p2.x,d);
+        SDL_RenderDrawLine(renderWindow,vector->p2.x,screenSizeY/2-d,
+                            vector->p2.x,screenSizeY/2+d);
     }
 }

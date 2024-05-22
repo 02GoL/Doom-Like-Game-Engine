@@ -3,7 +3,7 @@
 Engine::Engine(float screenSizeX, float screenSizeY){
     window = new Window(screenSizeX,screenSizeY);
     this->renderWindow = window->getRenderWindow();
-    player = new Player(350,350,90,3,1.75);
+    player = new Player(350,350,180,3,1.75);
     fovRenderer = new FOVRenderer(renderWindow,screenSizeX,screenSizeY,90);
     mapTree.loadFrom("../test/mapDataSimple.txt");
 }
@@ -64,8 +64,8 @@ void Engine::renderPlayer(){
     SDL_SetRenderDrawColor(renderWindow,0,255,0,255);
     SDL_RenderFillRectF(renderWindow,&playerSprite);
     
-    int x = playerPosition.x+playerSprite.h/2;
-    int y = playerPosition.y+playerSprite.w/2;
+    int x = playerPosition.x;
+    int y = playerPosition.y;
 
     SDL_RenderDrawLineF(renderWindow,x,y,x+(200*cos(angle)),y+(200*sin(angle))); // Middle line
     SDL_RenderDrawLineF(renderWindow,x,y,x+(400*cos(angle+fov)),y+(400*sin(angle+fov))); //Upper line

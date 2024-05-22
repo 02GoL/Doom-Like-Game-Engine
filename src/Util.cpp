@@ -64,12 +64,12 @@ float normalizeAngle(float angle){
 }
 
 bool inAngleRange(float angle, float lowerAngleBound, float upperAnglerBound){
-    float range = getAngleDiff(lowerAngleBound,upperAnglerBound)+eps;
+    float range = getAngleDiff(lowerAngleBound,upperAnglerBound);
     return getAngleDiff(angle,lowerAngleBound) <= range && getAngleDiff(angle,upperAnglerBound) <= range;
 }
 
-bool inRange(float x, float boundA, float boundB){
-    return x >= getMinF(boundA,boundB)-eps && x <= getMaxF(boundA,boundB)+eps;
+bool inRange(float angle, float boundA, float boundB){
+    return angle >= getMinF(boundA,boundB)-eps && angle <= getMaxF(boundA,boundB)+eps;
 }
 
 void setMidPoint(Vector* vector){
@@ -90,46 +90,50 @@ void setNormal(Vector* vector){
     }
 }
 
-Point getIntersection(Vector* v1, Vector* v2){
+Point intersectingPoint(Vector* v1, Vector* v2){
     Point newPoint;
-
-    float day = v1->p2.y-v1->p1.y;
-    float dax = v1->p1.x-v1->p2.x;
-    float da = day*v1->p1.x+dax*v1->p1.y;
-
-    float dby = v2->p2.y-v2->p1.y;
-    float dbx = v2->p1.x-v2->p2.x;
-    float db = dby*v2->p1.x+dbx*v2->p1.y;
-
-    float det = float(day*dbx-dax*dby);
-    
-    float x = float(dbx*da-dax*db)/det;
-    float y = float(day*db-dby*da)/det;
-    
-    newPoint.x = x;
-    newPoint.y = y;
+    float t = float((v1->p1.x-v2->p1.x)*(v2->p1.y-v2->p2.y)-(v1->p1.y-v2->p1.y)*(v2->p1.x-v2->p2.x))/
+                ((v1->p1.x-v1->p2.x)*(v2->p1.y-v2->p2.y)-(v1->p1.y-v1->p2.y)*(v2->p1.x-v2->p2.x));
+    newPoint.x = float(v1->p1.x+t*(v1->p2.x-v1->p1.x));
+    newPoint.y = float(v1->p1.y+t*(v1->p2.y-v1->p1.y));
     return newPoint;
 }
 
-Point getIntersection(Vector* v1, Point p1, Point p2){
+Point intersectingPoint(Vector* v1, Point p1, Point p2){
     Point newPoint;
-
-    float day = v1->p2.y-v1->p1.y;
-    float dax = v1->p1.x-v1->p2.x;
-    float da = day*v1->p1.x+dax*v1->p1.y;
-
-    float dby = p2.y-p1.y;
-    float dbx = p1.x-p2.x;
-    float db = dby*p1.x+dbx*p1.y;
-
-    float det = float(day*dbx-dax*dby);
-
-    float x = float(dbx*da-dax*db)/det;
-    float y = float(day*db-dby*da)/det;
-
-    newPoint.x = x;
-    newPoint.y = y;
+    float t = float((v1->p1.x-p1.x)*(p1.y-p2.y)-(v1->p1.y-p1.y)*(p1.x-p2.x))/
+                ((v1->p1.x-v1->p2.x)*(p1.y-p2.y)-(v1->p1.y-v1->p2.y)*(p1.x-p2.x));
+    newPoint.x = float(v1->p1.x+t*(v1->p2.x-v1->p1.x));
+    newPoint.y = float(v1->p1.y+t*(v1->p2.y-v1->p1.y));
     return newPoint;
+}
+
+Point intersectingPoint(Vector* v1, Point p1, float angle){
+    Point p2 = p1;
+    p2.x += cos(angle);
+    p2.y += sin(angle);
+    float t = float((v1->p1.x-p1.x)*(p1.y-p2.y)-(v1->p1.y-p1.y)*(p1.x-p2.x))/
+                ((v1->p1.x-v1->p2.x)*(p1.y-p2.y)-(v1->p1.y-v1->p2.y)*(p1.x-p2.x));
+    p2.x = float(v1->p1.x+t*(v1->p2.x-v1->p1.x));
+    p2.y = float(v1->p1.y+t*(v1->p2.y-v1->p1.y));
+    return p2;
+}
+
+bool isIntersectingSeg(Vector* v1, Point p1, float angle){
+    Point p2 = p1;
+    p2.x += cos(angle);
+    p2.y += sin(angle);
+    float t = float((v1->p1.x-p1.x)*(p1.y-p2.y)-(v1->p1.y-p1.y)*(p1.x-p2.x))/
+                ((v1->p1.x-v1->p2.x)*(p1.y-p2.y)-(v1->p1.y-v1->p2.y)*(p1.x-p2.x));
+    /*
+    float u = ((v1->p1.x-v1->p2.x)*(v1->p1.y-v1->p1.y)-(v1->p1.y-v1->p2.y)*(v1->p1.x-p1.x))/
+                ((v1->p1.x-v1->p2.x)*(v1->p1.y-p2.y)-(v1->p1.y-v1->p2.y)*(p1.x-p2.x));
+    */
+    float x = float(v1->p1.x+t*(v1->p2.x-v1->p1.x));
+    float y = float(v1->p1.y+t*(v1->p2.y-v1->p1.y));
+    
+    float theta = normalizeAngle(atan2(y-p1.y,x-p1.x));
+    return inRange(theta,angle,angle) && inRange(t,0,1);
 }
 
 bool onLine(Vector* vector, Point point){
