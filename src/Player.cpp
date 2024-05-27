@@ -67,19 +67,13 @@ void Player::inputHandler(){
 
 void Player::movementHandler(){
     if(turnDir == 1){
-        angle -= turnRate;
-        if(angle < 0){
-            angle += 2*M_PI;
-        }
+        angle = normalizeAngle(angle-turnRate);
     }else if(turnDir == -1){
-        angle += turnRate;
-        if(angle >= 2*M_PI){
-            angle -= 2*M_PI;
-        }      
+        angle = normalizeAngle(angle+turnRate);   
     }
 
-    dx = moveSpeed*(verticalVel*cos(angle)+horizontalVel*cos(angle+M_PI/2));
-    dy = moveSpeed*(verticalVel*sin(angle)+horizontalVel*sin(angle+M_PI/2));
+    dx = moveSpeed*(verticalVel*cos(angle)+horizontalVel*cos(angle+PI/2));
+    dy = moveSpeed*(verticalVel*sin(angle)+horizontalVel*sin(angle+PI/2));
 
     playerSprite.x += dx;
     playerSprite.y += dy;

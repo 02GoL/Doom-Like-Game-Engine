@@ -1,3 +1,4 @@
+#pragma once
 #include<iostream>
 #include<vector>
 #include<SDL2/SDL.h>
@@ -5,9 +6,8 @@
 #include<fstream>
 #include<math.h>
 #include<queue>
-#define eps 0.01
-
-#pragma once
+#define eps 0.0001
+#define PI 3.14159
 
 using namespace std;
 
@@ -43,4 +43,3 @@ Point intersectingPoint(Vector* v1, Vector* v2);
 Point intersectingPoint(Vector* v1, Point p, Point p1);
 Point intersectingPoint(Vector* v1, Point p1, float angle);
 bool isIntersectingSeg(Vector* v1, Point p1, float angle);
-bool onLine(Vector* vector, Point point);

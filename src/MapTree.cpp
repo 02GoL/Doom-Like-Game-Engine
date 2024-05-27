@@ -93,9 +93,9 @@ int MapTree::getPointPos(Vector* v1, Point p){
     }
 }
 
-queue<Vector*> MapTree::getRenderOrder(Point playerPosition, float angle){
+queue<Vector*> MapTree::getRenderOrder(Player* player){
     queue<Vector*> renderQueue;
-    getRenderOrder(this->root,renderQueue,playerPosition);
+    getRenderOrder(this->root,renderQueue,player->getPosition());
     return renderQueue;
 }
 

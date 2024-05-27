@@ -1,4 +1,5 @@
 #include"Maploader.h"
+#include"Player.h"
 
 struct Node{
     vector<Vector*> vectors;
@@ -19,5 +20,5 @@ class MapTree{
         int getVectorPos(Vector* v1, Vector* v2);
         int getPointPos(Vector* v1, Point p);
         int getHeight(Node* node);
-        queue<Vector*> getRenderOrder(Point playerPosition, float angle);
+        queue<Vector*> getRenderOrder(Player* player);
 };

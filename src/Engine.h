@@ -3,7 +3,7 @@
 #include"Player.h"
 #include"Maptree.h"
 #include"Window.h"
-#include"FOVRenderer.h"
+#include"ScreenRenderer.h"
 
 using namespace std;
 
@@ -12,19 +12,16 @@ class Engine{
         Window* window;
         SDL_Renderer* renderWindow;
         Player* player;
-        FOVRenderer* fovRenderer;
+        ScreenRenderer* screenRenderer;
         MapTree mapTree;
 
         void eventHandler();
         void renderEngine();
         void updateEngine();
-        void renderTopDown();
-        void renderFOV();
-        void renderPlayer();
         void clean();
         bool isRunning();
 
     public:
-        Engine(float screenSizeX, float screenSizeY);
+        Engine(int screenSizeX, int screenSizeY);
         void startEngineLoop();
 };
