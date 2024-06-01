@@ -3,7 +3,7 @@
 Engine::Engine(int screenSizeX, int screenSizeY){
     window = new Window(screenSizeX,screenSizeY);
     renderWindow = window->getRenderWindow();
-    player = new Player(350,350,315,3,1.75);
+    player = new Player(350,350,0,3,1.75);
     screenRenderer = new ScreenRenderer(renderWindow,player,screenSizeX,screenSizeY);
     mapTree.loadFrom("../test/mapData.txt");
 }
@@ -18,7 +18,7 @@ void Engine::renderEngine(){
     SDL_SetRenderDrawColor(renderWindow,255,255,255,255);
 
     screenRenderer->renderFOV(mapTree.getRenderOrder(player));
-    screenRenderer->renderTopDown(mapTree.getRenderOrder(player));
+    //screenRenderer->renderTopDown(mapTree.getRenderOrder(player));
 
     SDL_SetRenderDrawColor(renderWindow,0,0,0,255);
     SDL_RenderPresent(renderWindow);

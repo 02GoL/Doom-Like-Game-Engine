@@ -47,12 +47,16 @@ float getDet(Point p1, Point p2, Point p3){
     return (p2.x-p1.x)*(p3.y-p1.y)-(p3.x-p1.x)*(p2.y-p1.y);
 }
 
-float getAngleDiff(float theta, float beta){
-    float diff = fmod(beta-theta+PI,2*PI);
+float getAngleDiff(float angle, float relativeAngle){
+    float diff = fmod(angle-relativeAngle+PI,2*PI);
     if(diff < 0){
         diff += 2*PI;
     }
-    return abs(diff-PI);
+    return diff-PI;
+}
+
+float getAbsAngleDiff(float angle,float relativeAngle){ //lower bound | upper bound
+    return abs(getAngleDiff(angle,relativeAngle));
 }
 
 float normalizeAngle(float angle){
@@ -64,47 +68,25 @@ float normalizeAngle(float angle){
 }
 
 bool inAngleRange(float angle, float lowerAngleBound, float upperAnglerBound){
-    float range = getAngleDiff(lowerAngleBound,upperAnglerBound)+eps;
-    return getAngleDiff(angle,lowerAngleBound) <= range && getAngleDiff(angle,upperAnglerBound) <= range;
+    float range = getAbsAngleDiff(lowerAngleBound,upperAnglerBound)+eps;
+    return getAbsAngleDiff(angle,lowerAngleBound) <= range && getAbsAngleDiff(angle,upperAnglerBound) <= range;
 }
 
 bool inRange(float angle, float boundA, float boundB){
     return angle >= getMinF(boundA,boundB)-eps && angle <= getMaxF(boundA,boundB)+eps;
 }
 
-void setMidPoint(Vector* vector){
-    vector->midPoint.x = (vector->p1.x+vector->p2.x)/2;
-    vector->midPoint.y = (vector->p1.y+vector->p2.y)/2;
-}
-
-void setNormal(Vector* vector){
-    float a = vector->p2.x-vector->p1.x;
-    float b = vector->p2.y-vector->p1.y;
-    float uVect = sqrt(pow(a,2) + pow(b,2));
-    if(vector->facingDir == 1){ // 1 == inward 0 == outward
-        vector->normal.x = vector->midPoint.x+(a*cos(PI/2)-b*sin(PI/2))*10/uVect;
-        vector->normal.y = vector->midPoint.y+(a*sin(PI/2)+b*cos(PI/2))*10/uVect;
-    }else{
-        vector->normal.x = vector->midPoint.x-(a*cos(PI/2)-b*sin(PI/2))*10/uVect;
-        vector->normal.y = vector->midPoint.y-(a*sin(PI/2)+b*cos(PI/2))*10/uVect;
-    }
-}
-
 Point intersectingPoint(Vector* v1, Vector* v2){
-    Point newPoint;
     float t = float((v1->p1.x-v2->p1.x)*(v2->p1.y-v2->p2.y)-(v1->p1.y-v2->p1.y)*(v2->p1.x-v2->p2.x))/
                 ((v1->p1.x-v1->p2.x)*(v2->p1.y-v2->p2.y)-(v1->p1.y-v1->p2.y)*(v2->p1.x-v2->p2.x));
-    newPoint.x = float(v1->p1.x+t*(v1->p2.x-v1->p1.x));
-    newPoint.y = float(v1->p1.y+t*(v1->p2.y-v1->p1.y));
+    Point newPoint(float(v1->p1.x+t*(v1->p2.x-v1->p1.x)),float(v1->p1.y+t*(v1->p2.y-v1->p1.y)),0);
     return newPoint;
 }
 
 Point intersectingPoint(Vector* v1, Point p1, Point p2){
-    Point newPoint;
     float t = float((v1->p1.x-p1.x)*(p1.y-p2.y)-(v1->p1.y-p1.y)*(p1.x-p2.x))/
                 ((v1->p1.x-v1->p2.x)*(p1.y-p2.y)-(v1->p1.y-v1->p2.y)*(p1.x-p2.x));
-    newPoint.x = float(v1->p1.x+t*(v1->p2.x-v1->p1.x));
-    newPoint.y = float(v1->p1.y+t*(v1->p2.y-v1->p1.y));
+    Point newPoint(float(v1->p1.x+t*(v1->p2.x-v1->p1.x)),float(v1->p1.y+t*(v1->p2.y-v1->p1.y)),0);
     return newPoint;
 }
 
@@ -134,4 +116,22 @@ bool isIntersectingSeg(Vector* v1, Point p1, float angle){
     
     float theta = normalizeAngle(atan2(y-p1.y,x-p1.x));
     return inRange(t,0,1) && inAngleRange(theta,angle,angle);
+}
+
+void Vector::setMidPoint(){
+    this->midPoint.x = (this->p1.x+this->p2.x)/2;
+    this->midPoint.y = (this->p1.y+this->p2.y)/2;
+}
+
+void Vector::setNormal(){
+    float a = this->p2.x-this->p1.x;
+    float b = this->p2.y-this->p1.y;
+    float uVect = sqrt(pow(a,2) + pow(b,2));
+    if(this->facingDir == 1){ 
+        this->normal.x = this->midPoint.x+(a*cos(M_PI/2)-b*sin(M_PI/2))*10/uVect;
+        this->normal.y = this->midPoint.y+(a*sin(M_PI/2)+b*cos(M_PI/2))*10/uVect;
+    }else{
+        this->normal.x = this->midPoint.x-(a*cos(M_PI/2)-b*sin(M_PI/2))*10/uVect;
+        this->normal.y = this->midPoint.y-(a*sin(M_PI/2)+b*cos(M_PI/2))*10/uVect;
+    }
 }

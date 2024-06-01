@@ -12,7 +12,7 @@ void MapTree::loadFrom(string mapDataPath){
 
 Node* MapTree::insertNode(Node* node, Vector* vector){
     if(node == NULL){
-        Node* newNode = new Node;
+        Node* newNode = new Node();
         newNode->vectors.push_back(vector);
         mapVectors.erase(mapVectors.begin());
         return newNode;
@@ -27,20 +27,16 @@ Node* MapTree::insertNode(Node* node, Vector* vector){
     }else if(position == 3){
         cout << "Split line\n";
         Point splitPoint = intersectingPoint(node->vectors.at(0),vector);
-        Vector* v1 = new Vector;
-        v1->p1 = vector->p1;
-        v1->p2 = splitPoint;
+        Vector* v1 = new Vector(vector->p1,splitPoint);
         v1->index = vector->index;
         v1->facingDir = vector->facingDir;
-        setMidPoint(v1);
-        setNormal(v1);
-        Vector* v2 = new Vector;
-        v2->p1 = splitPoint;
-        v2->p2 = vector->p2;
+        v1->setMidPoint();
+        v1->setNormal();
+        Vector* v2 = new Vector(splitPoint,vector->p2);
         v2->index = vector->index;
         v2->facingDir = vector->facingDir;
-        setMidPoint(v2);
-        setNormal(v2);
+        v2->setMidPoint();
+        v2->setNormal();
         mapVectors.push_back(v1);
         mapVectors.push_back(v2);
         mapVectors.erase(mapVectors.begin());

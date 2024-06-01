@@ -7,26 +7,26 @@ vector<Vector*> Maploader::loadData(string mapDataPath){
     if(myFile.is_open()){
         while(getline(myFile,str)){
             if(str != ""){
-                Vector* vector = new Vector;
+                Vector* v1 = new Vector();
                 stringstream ss(str);
                 string num;
                 
                 ss >> num;
-                vector->p1.x = stoi(num);
+                v1->p1.x = stoi(num);
                 ss >> num;
-                vector->p1.y = stoi(num);
+                v1->p1.y = stoi(num);
                 ss >> num;
-                vector->p2.x = stoi(num);
+                v1->p2.x = stoi(num);
                 ss >> num;
-                vector->p2.y = stoi(num);
+                v1->p2.y = stoi(num);
                 ss >> num;
-                vector->facingDir = stoi(num);
-                vector->index = i++;
+                v1->facingDir = stoi(num);
+                v1->index = i++;
                 
-                setMidPoint(vector);
-                setNormal(vector);
+                v1->setMidPoint();
+                v1->setNormal();
             
-                vectors.push_back(vector);
+                vectors.push_back(v1);
             }
         }
         cout << "Loaded map data...\n";

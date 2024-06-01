@@ -9,7 +9,7 @@ class ScreenRenderer{
         float screenSizeX;
         float screenSizeY;
         float screenDist;
-        vector<Vector*> coveringVectors;
+        vector<NumberRange*> occupiedAngle;
     public:
         ScreenRenderer(SDL_Renderer* renderWindow, Player* player, float screenSizeX, float screenSizeY);
         void renderTopDown(queue<Vector*> renderQueue);
@@ -17,5 +17,6 @@ class ScreenRenderer{
         void renderFOV(queue<Vector*> renderQueue);
         bool inFOV(Vector* vector);
         void renderWalll(Vector* vector);
-        void drawClipWall(float a, float b, float c, float d);
+        void drawWall(float x1, float x2, float y1, float y2);
+        void clipWall(float lowerTheta, float upperTheta, Vector* vector, Vector* screenVector);
 };

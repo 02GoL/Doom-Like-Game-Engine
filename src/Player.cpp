@@ -92,8 +92,6 @@ void Player::setAngle(float angle){
 }
 
 Point Player::getPosition(){
-    Point playerPosition;
-    playerPosition.x = playerSprite.x+2;
-    playerPosition.y = playerSprite.y+2;
+    Point playerPosition(playerSprite.x+2,playerSprite.y+2,0);
     return playerPosition;
 }
