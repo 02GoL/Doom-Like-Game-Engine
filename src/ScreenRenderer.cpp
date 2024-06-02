@@ -99,7 +99,7 @@ void ScreenRenderer::renderWalll(Vector* vector){
     if(!inAngleRange(thetaA,lowerAngle,upperAngle) && !inAngleRange(thetaB,lowerAngle,upperAngle)){
         thetaA = lowerAngle;
         thetaB = upperAngle;
-        SDL_SetRenderDrawColor(renderWindow,255,255,255,255);
+        SDL_SetRenderDrawColor(renderWindow,169,200,65,255);
     }else if(inAngleRange(thetaA,lowerAngle,upperAngle) && !inAngleRange(thetaB,lowerAngle,upperAngle)){
         if(isIntersectingSeg(vector,position,lowerAngle)){
             thetaB = lowerAngle;
@@ -179,15 +179,25 @@ void ScreenRenderer::clipWall(float lowerTheta, float upperTheta, Vector* vector
     return;
 }
 
-
+// with the use of linear interpolation, draws a filled wall from given values
 void ScreenRenderer::drawWall(float x1, float x2, float y1, float y2){
+    float y;
+    for(int x = x1; x < x2; x++){
+        y = y1+((y2-y1)/(x2-x1))*(x-x1);
+        if(y > getMaxF(y1,y2)){
+            y = getMaxF(y1,y2);
+        }
+        if(y < getMinF(y1,y2)){
+            y = getMinF(y1,y2);
+        }
+        SDL_RenderDrawLine(renderWindow,x,screenSizeY/2-y,
+                        x,screenSizeY/2+y);
+    }
+    /*
+    SDL_SetRenderDrawColor(renderWindow,255,255,255,255);
     SDL_RenderDrawLine(renderWindow,x1,screenSizeY/2-y1,
                         x1,screenSizeY/2+y1);
     SDL_RenderDrawLine(renderWindow,x2,screenSizeY/2-y2,
                         x2,screenSizeY/2+y2);
-
-    SDL_RenderDrawLine(renderWindow,x1,screenSizeY/2-y1,
-                        x2,screenSizeY/2-y2);
-    SDL_RenderDrawLine(renderWindow,x1,screenSizeY/2+y1,
-                        x2,screenSizeY/2+y2);
+                        */
 }
