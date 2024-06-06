@@ -3,9 +3,9 @@
 Engine::Engine(int screenSizeX, int screenSizeY){
     window = new Window(screenSizeX,screenSizeY);
     renderWindow = window->getRenderWindow();
+    mapTree.loadFrom("../test/mapDataSimple.txt");
     player = new Player(350,350,0,3,1.75);
-    screenRenderer = new ScreenRenderer(renderWindow,player,screenSizeX,screenSizeY);
-    mapTree.loadFrom("../test/mapData.txt");
+    screenRenderer = new ScreenRenderer(renderWindow,player,screenSizeX,screenSizeY,mapTree.getSectorData());
 }
 
 void Engine::eventHandler(){

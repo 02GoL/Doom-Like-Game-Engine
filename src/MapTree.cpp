@@ -2,9 +2,11 @@
 
 void MapTree::loadFrom(string mapDataPath){
     this->root = NULL;
-    this->mapVectors = map.loadData(mapDataPath);
+    this->map.loadData(mapDataPath);
+    this->mapVectors = map.getVectorData();
+    //this->mapVectors = map.loadData(mapDataPath);
     while(!mapVectors.empty()){
-        cout << "Added vector " << mapVectors.front()->index << " at " << mapVectors.front()->p1.x <<  ", "<< mapVectors.front()->p1.y << " to " << mapVectors.front()->p2.x <<  ", "<< mapVectors.front()->p2.y << "\n";
+        cout << "Added vector " << mapVectors.front()->vectorIndex << " at " << mapVectors.front()->p1.x <<  ", "<< mapVectors.front()->p1.y << " to " << mapVectors.front()->p2.x <<  ", "<< mapVectors.front()->p2.y << "\n";
         this->root = insertNode(root,mapVectors.front());
     }
     cout << this->root->height << "\n";
@@ -28,13 +30,20 @@ Node* MapTree::insertNode(Node* node, Vector* vector){
         cout << "Split line\n";
         Point splitPoint = intersectingPoint(node->vectors.at(0),vector);
         Vector* v1 = new Vector(vector->p1,splitPoint);
-        v1->index = vector->index;
+        v1->vectorIndex = vector->vectorIndex;
         v1->facingDir = vector->facingDir;
+        v1->sectorIndex = vector->sectorIndex;
+        v1->portalingSector = vector->portalingSector;
+
         v1->setMidPoint();
         v1->setNormal();
+        
         Vector* v2 = new Vector(splitPoint,vector->p2);
-        v2->index = vector->index;
+        v2->vectorIndex = vector->vectorIndex;
         v2->facingDir = vector->facingDir;
+        v2->sectorIndex = vector->sectorIndex;
+        v2->portalingSector = vector->portalingSector;
+
         v2->setMidPoint();
         v2->setNormal();
         mapVectors.push_back(v1);

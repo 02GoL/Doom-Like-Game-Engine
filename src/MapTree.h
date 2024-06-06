@@ -21,4 +21,5 @@ class MapTree{
         int getPointPos(Vector* v1, Point p);
         int getHeight(Node* node);
         queue<Vector*> getRenderOrder(Player* player);
+        vector<Sector*> getSectorData(){return map.getSectorData();}
 };

@@ -14,8 +14,8 @@ using namespace std;
 struct Point{
     float x;
     float y;
-    float z;
-    Point(float x, float y, float z):x(x), y(y), z(z){}
+
+    Point(float x, float y):x(x), y(y){}
     Point(){};
 };
 
@@ -24,18 +24,27 @@ struct Vector{
     Point p2;
     Point midPoint;
     Point normal;
-    int index;
     int facingDir;
+    int sectorIndex;
+    int vectorIndex;
+    int portalingSector;
+
     Vector(Point p1, Point p2):p1(p1), p2(p2){}
     Vector(){}
     void setMidPoint();
     void setNormal();
 };
 
+struct Sector{
+    int sectorIndex;
+    float floorHeight;
+    float ceilingHeight;
+};
+
 struct NumberRange{
-    float lower;
-    float upper;
-    NumberRange(float lower, float upper):lower(lower), upper(upper){}
+    float lowerX;
+    float upperX;
+    NumberRange(float lowerX, float upperX):lowerX(lowerX), upperX(upperX){}
 };
 
 float toRad(float angle);

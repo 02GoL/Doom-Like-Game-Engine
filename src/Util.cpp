@@ -79,14 +79,14 @@ bool inRange(float angle, float boundA, float boundB){
 Point intersectingPoint(Vector* v1, Vector* v2){
     float t = float((v1->p1.x-v2->p1.x)*(v2->p1.y-v2->p2.y)-(v1->p1.y-v2->p1.y)*(v2->p1.x-v2->p2.x))/
                 ((v1->p1.x-v1->p2.x)*(v2->p1.y-v2->p2.y)-(v1->p1.y-v1->p2.y)*(v2->p1.x-v2->p2.x));
-    Point newPoint(float(v1->p1.x+t*(v1->p2.x-v1->p1.x)),float(v1->p1.y+t*(v1->p2.y-v1->p1.y)),0);
+    Point newPoint(float(v1->p1.x+t*(v1->p2.x-v1->p1.x)),float(v1->p1.y+t*(v1->p2.y-v1->p1.y)));
     return newPoint;
 }
 
 Point intersectingPoint(Vector* v1, Point p1, Point p2){
     float t = float((v1->p1.x-p1.x)*(p1.y-p2.y)-(v1->p1.y-p1.y)*(p1.x-p2.x))/
                 ((v1->p1.x-v1->p2.x)*(p1.y-p2.y)-(v1->p1.y-v1->p2.y)*(p1.x-p2.x));
-    Point newPoint(float(v1->p1.x+t*(v1->p2.x-v1->p1.x)),float(v1->p1.y+t*(v1->p2.y-v1->p1.y)),0);
+    Point newPoint(float(v1->p1.x+t*(v1->p2.x-v1->p1.x)),float(v1->p1.y+t*(v1->p2.y-v1->p1.y)));
     return newPoint;
 }
 

@@ -2,7 +2,11 @@
 
 class Maploader{
     private:
+        vector<Sector*> sectors;
         vector<Vector*> vectors;
     public:
-        vector<Vector*> loadData(string dataPath);
+        void loadData(string dataPath);
+        vector<Sector*> getSectorData(){return sectors;}
+        vector<Vector*> getVectorData(){return vectors;}
+
 };
