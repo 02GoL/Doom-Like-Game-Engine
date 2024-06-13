@@ -6,7 +6,7 @@
 #include<fstream>
 #include<math.h>
 #include<queue>
-#define eps 0.001
+#define eps 0.00005
 #define PI 3.14159
 
 using namespace std;
@@ -38,13 +38,34 @@ struct Vector{
 struct Sector{
     int sectorIndex;
     float floorHeight;
-    float ceilingHeight;
+    float ceilHeight;
 };
 
-struct NumberRange{
-    float lowerX;
-    float upperX;
-    NumberRange(float lowerX, float upperX):lowerX(lowerX), upperX(upperX){}
+struct RenderedSection{
+    float t0;
+    float t1;
+    float x0;
+    float y0;
+    float slope;
+    float floor;
+    float ceiling;
+    bool portal;
+    
+    RenderedSection(float t0, float t1, float x0, float y0, float slope, float floor, float ceiling, bool portal){
+        this->t0 = t0;
+        this->t1 = t1;
+        this->x0 = x0;
+        this->y0 = y0;
+        this->slope = slope;
+        this->floor = floor;
+        this->ceiling = ceiling;
+        this->portal = portal;
+    }
+    RenderedSection(float t0, float t1){
+        this->t0 = t0;
+        this->t1 = t1;
+    }
+    RenderedSection(){};
 };
 
 float toRad(float angle);

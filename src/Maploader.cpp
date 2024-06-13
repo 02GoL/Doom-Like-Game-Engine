@@ -21,7 +21,7 @@ void Maploader::loadData(string mapDataPath){
                 ss >> metaData;
                 sector->floorHeight = stoi(metaData);
                 ss >> metaData;
-                sector->ceilingHeight = stoi(metaData);
+                sector->ceilHeight = stoi(metaData);
 
                 sectors.push_back(sector);
                 loadingSectorData = false;
