@@ -314,22 +314,12 @@ void ScreenRenderer::clipWall(float lowerTheta, float upperTheta, Vector* vector
             SDL_SetRenderDrawColor(renderWindow,155,69,133,255);
             drawWall(p0,p1,slope,-getMinF(ceilY0,ceilY1),getMax(ceilY0,ceilY1),temp);
 
-            if(floorY0-floorY1 < 0){
-                // draw to the lower 
-                SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-                drawWall(p0,p1,slope,screenSizeY/2*floorY1,-floorY1,temp);
-            }else{
-                // draw upper
-                SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-                drawWall(p0,p1,slope,screenSizeY/2*floorY0,-floorY0,temp);
-            }
-            if(ceilY0-ceilY1 > 0){
-                SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-                drawWall(p0,p1,slope,-ceilY1,screenSizeY/2*ceilY1,temp);
-            }else{
-                SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-                drawWall(p0,p1,slope,-ceilY0,screenSizeY/2*ceilY0,temp);
-            }
+            SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+            drawWall(p0,p1,slope,screenSizeY/2*floorY0,-floorY0,temp);
+
+            SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+            drawWall(p0,p1,slope,-ceilY0,screenSizeY/2*ceilY0,temp);
+            
             floorY0 = getMinF(floorY0,floorY1);
             ceilY0 = getMinF(ceilY0,ceilY1);
             isPortal = true;
@@ -351,20 +341,13 @@ void ScreenRenderer::clipWall(float lowerTheta, float upperTheta, Vector* vector
 
         SDL_SetRenderDrawColor(renderWindow,155,69,133,255);
         drawWall(p0,p1,slope,-getMinF(ceilY0,ceilY1),getMax(ceilY0,ceilY1));
-        if(floorY0-floorY1 < 0){
-            SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-            drawWall(p0,p1,slope,screenSizeY/2*floorY1,-floorY1,temp);
-        }else{
-            SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-            drawWall(p0,p1,slope,screenSizeY/2*floorY0,-floorY0,temp);
-        }
-        if(ceilY0-ceilY1 < 0){
-            SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-            drawWall(p0,p1,slope,-ceilY1,screenSizeY/2*ceilY1,temp);
-        }else{
-            SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-            drawWall(p0,p1,slope,-ceilY0,screenSizeY/2*ceilY0,temp);
-        }
+
+        SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+        drawWall(p0,p1,slope,screenSizeY/2*floorY0,-floorY0);
+
+        SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+        drawWall(p0,p1,slope,-ceilY0,screenSizeY/2*ceilY0);
+        
         floorY0 = getMinF(floorY0,floorY1);
         ceilY0 = getMinF(ceilY0,ceilY1);
         isPortal = true;
