@@ -10,7 +10,69 @@ Engine::Engine(int screenSizeX, int screenSizeY){
 
 void Engine::eventHandler(){
     window->eventHandler();
-    player->inputHandler();
+    SDL_Event keyE;
+    while(SDL_PollEvent(&keyE)){
+        const Uint8* currentKeyState = SDL_GetKeyboardState(NULL);
+        switch(keyE.type){
+            case SDL_KEYDOWN:
+                keyHandler.setKeyDown(keyE.key.keysym.sym);
+                break;
+            case SDL_KEYUP:
+                keyHandler.setKeyRelease(keyE.key.keysym.sym);
+                break;
+        }
+        if((!keyHandler.isPressed(SDLK_d) && !keyHandler.isPressed(SDLK_a)) ||
+            (keyHandler.isPressed(SDLK_d) && keyHandler.isPressed(SDLK_a))){
+            player->setHorizontalXVel(0);
+        }else{
+            if(keyHandler.isPressed(SDLK_d)){
+                player->setHorizontalXVel(1);
+            }
+            if(keyHandler.isPressed(SDLK_a)){
+                player->setHorizontalXVel(-1);
+            }
+        }
+        if(!keyHandler.isPressed(SDLK_w) && !keyHandler.isPressed(SDLK_s) ||
+            (keyHandler.isPressed(SDLK_w) && keyHandler.isPressed(SDLK_s))){
+            player->setHorizontalYVel(0); // Vertically velocity relative to the player's facing direction
+        }else{
+            if(keyHandler.isPressed(SDLK_w)){
+                player->setHorizontalYVel(1);
+            }
+            if(keyHandler.isPressed(SDLK_s)){
+                player->setHorizontalYVel(-1);
+            }
+        }
+        if(!keyHandler.isPressed(SDLK_SPACE) && !keyHandler.isPressed(SDLK_LSHIFT) ||
+            (keyHandler.isPressed(SDLK_SPACE) && keyHandler.isPressed(SDLK_LSHIFT))){
+            player->setVerticalZVel(0); // Vertically velocity relative to the player's facing direction
+        }else{
+            if(keyHandler.isPressed(SDLK_SPACE)){
+                player->setVerticalZVel(1);
+            }
+            if(keyHandler.isPressed(SDLK_LSHIFT)){
+                player->setVerticalZVel(-1);
+            }
+        }
+        if(!keyHandler.isPressed(SDLK_q) && !keyHandler.isPressed(SDLK_e) ||
+            (keyHandler.isPressed(SDLK_q) && keyHandler.isPressed(SDLK_e))){
+            player->setTurnDir(0);
+        }else{
+            if(keyHandler.isPressed(SDLK_q)){
+                player->setTurnDir(1);
+            }
+            if(keyHandler.isPressed(SDLK_e)){
+                player->setTurnDir(-1);
+            }
+        }
+    
+        if(keyHandler.hasKeyEvent()){
+            player->setHorizontalXVel(0);
+            player->setHorizontalYVel(0);
+            player->setVerticalZVel(0);
+            player->setTurnDir(0);
+        }
+    }
 }
 
 void Engine::renderEngine(){

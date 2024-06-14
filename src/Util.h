@@ -14,7 +14,7 @@ using namespace std;
 struct Point{
     float x;
     float y;
-
+    
     Point(float x, float y):x(x), y(y){}
     Point(){};
 };
@@ -49,9 +49,9 @@ struct RenderedSection{
     float slope;
     float floor;
     float ceiling;
-    bool portal;
+    bool isPortal;
     
-    RenderedSection(float t0, float t1, float x0, float y0, float slope, float floor, float ceiling, bool portal){
+    RenderedSection(float t0, float t1, float x0, float y0, float slope, float floor, float ceiling, bool isPortal){
         this->t0 = t0;
         this->t1 = t1;
         this->x0 = x0;
@@ -59,19 +59,15 @@ struct RenderedSection{
         this->slope = slope;
         this->floor = floor;
         this->ceiling = ceiling;
-        this->portal = portal;
+        this->isPortal = isPortal;
     }
-    RenderedSection(float t0, float t1){
-        this->t0 = t0;
-        this->t1 = t1;
-    }
-    RenderedSection(){};
+    RenderedSection(){}
 };
 
-float toRad(float angle);
-float pytha(float a, float b);
 int getMax(int a, int b);
 int getMin(int a, int b);
+float toRad(float angle);
+float pytha(float a, float b);
 float getMaxF(float a, float b);
 float getMinF(float a, float b);
 float getDet(Point p1, Point p2, Point p3);
@@ -80,8 +76,8 @@ float getAbsAngleDiff(float angle, float relativeAngle);
 float normalizeAngle(float angle);
 bool inAngleRange(float angle, float lowerAngleBound, float upperAnglerBound);
 bool inRange(float x, float boundA, float boundB);
+bool isIntersectingSeg(Vector* v1, Point p1, float angle);
+bool isIntersectingSeg(Vector* v1, Point p1, Point p2);
 Point intersectingPoint(Vector* v1, Vector* v2);
 Point intersectingPoint(Vector* v1, Point p, Point p1);
 Point intersectingPoint(Vector* v1, Point p1, float angle);
-bool isIntersectingSeg(Vector* v1, Point p1, float angle);
-bool isIntersectingSeg(Vector* v1, Point p1, Point p2);

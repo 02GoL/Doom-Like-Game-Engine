@@ -14,13 +14,14 @@ class Engine{
         Player* player;
         ScreenRenderer* screenRenderer;
         MapTree mapTree;
+        KeyHandler keyHandler;
 
         void eventHandler();
         void renderEngine();
         void updateEngine();
         void clean();
         bool isRunning();
-
+        void inputHandler();
     public:
         Engine(int screenSizeX, int screenSizeY);
         void startEngineLoop();

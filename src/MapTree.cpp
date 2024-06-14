@@ -99,6 +99,7 @@ int MapTree::getPointPos(Vector* v1, Point p){
 }
 
 queue<Vector*> MapTree::getRenderOrder(Player* player){
+    // further optimizations can be made here with vectors that have been split and have the same vector index
     queue<Vector*> renderQueue;
     getRenderOrder(this->root,renderQueue,player->getPosition());
     return renderQueue;

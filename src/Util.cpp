@@ -1,16 +1,5 @@
 #include"Util.h"
 
-float toRad(float angle){
-    if(angle == 360){
-        angle = 0;
-    }
-    return angle*PI/180.0f;
-}
-
-float pytha(float a, float b){
-    return sqrt(pow(a,2)+pow(b,2));
-}
-
 int getMax(int a, int b){
     if(a >= b){
         return a;
@@ -25,6 +14,17 @@ int getMin(int a, int b){
     }else{
         return b;
     }
+}
+
+float toRad(float angle){
+    if(angle == 360){
+        angle = 0;
+    }
+    return angle*PI/180.0f;
+}
+
+float pytha(float a, float b){
+    return sqrt(pow(a,2)+pow(b,2));
 }
 
 float getMaxF(float a, float b){
@@ -76,31 +76,6 @@ bool inRange(float angle, float boundA, float boundB){
     return angle >= getMinF(boundA,boundB)-eps && angle <= getMaxF(boundA,boundB)+eps;
 }
 
-Point intersectingPoint(Vector* v1, Vector* v2){
-    float t = float((v1->p1.x-v2->p1.x)*(v2->p1.y-v2->p2.y)-(v1->p1.y-v2->p1.y)*(v2->p1.x-v2->p2.x))/
-                ((v1->p1.x-v1->p2.x)*(v2->p1.y-v2->p2.y)-(v1->p1.y-v1->p2.y)*(v2->p1.x-v2->p2.x));
-    Point newPoint(float(v1->p1.x+t*(v1->p2.x-v1->p1.x)),float(v1->p1.y+t*(v1->p2.y-v1->p1.y)));
-    return newPoint;
-}
-
-Point intersectingPoint(Vector* v1, Point p1, Point p2){
-    float t = float((v1->p1.x-p1.x)*(p1.y-p2.y)-(v1->p1.y-p1.y)*(p1.x-p2.x))/
-                ((v1->p1.x-v1->p2.x)*(p1.y-p2.y)-(v1->p1.y-v1->p2.y)*(p1.x-p2.x));
-    Point newPoint(float(v1->p1.x+t*(v1->p2.x-v1->p1.x)),float(v1->p1.y+t*(v1->p2.y-v1->p1.y)));
-    return newPoint;
-}
-
-Point intersectingPoint(Vector* v1, Point p1, float angle){
-    Point p2 = p1;
-    p2.x += cos(angle);
-    p2.y += sin(angle);
-    float t = float((v1->p1.x-p1.x)*(p1.y-p2.y)-(v1->p1.y-p1.y)*(p1.x-p2.x))/
-                ((v1->p1.x-v1->p2.x)*(p1.y-p2.y)-(v1->p1.y-v1->p2.y)*(p1.x-p2.x));
-    p2.x = float(v1->p1.x+t*(v1->p2.x-v1->p1.x));
-    p2.y = float(v1->p1.y+t*(v1->p2.y-v1->p1.y));
-    return p2;
-}
-
 // need to add more info about this function since its different
 bool isIntersectingSeg(Vector* v1, Point p1, float angle){
     Point p2 = p1;
@@ -125,6 +100,31 @@ bool isIntersectingSeg(Vector* v1, Point p1, Point p2){
     float u = float(-((v1->p1.x-v1->p2.x)*(v1->p1.y-p1.y)-(v1->p1.y-v1->p2.y)*(v1->p1.x-p1.x))/
                 ((v1->p1.x-v1->p2.x)*(p1.y-p2.y)-(v1->p1.y-v1->p2.y)*(p1.x-p2.x)));
     return inRange(t,0,1) && inRange(u,0,1);
+}
+
+Point intersectingPoint(Vector* v1, Vector* v2){
+    float t = float((v1->p1.x-v2->p1.x)*(v2->p1.y-v2->p2.y)-(v1->p1.y-v2->p1.y)*(v2->p1.x-v2->p2.x))/
+                ((v1->p1.x-v1->p2.x)*(v2->p1.y-v2->p2.y)-(v1->p1.y-v1->p2.y)*(v2->p1.x-v2->p2.x));
+    Point newPoint(float(v1->p1.x+t*(v1->p2.x-v1->p1.x)),float(v1->p1.y+t*(v1->p2.y-v1->p1.y)));
+    return newPoint;
+}
+
+Point intersectingPoint(Vector* v1, Point p1, Point p2){
+    float t = float((v1->p1.x-p1.x)*(p1.y-p2.y)-(v1->p1.y-p1.y)*(p1.x-p2.x))/
+                ((v1->p1.x-v1->p2.x)*(p1.y-p2.y)-(v1->p1.y-v1->p2.y)*(p1.x-p2.x));
+    Point newPoint(float(v1->p1.x+t*(v1->p2.x-v1->p1.x)),float(v1->p1.y+t*(v1->p2.y-v1->p1.y)));
+    return newPoint;
+}
+
+Point intersectingPoint(Vector* v1, Point p1, float angle){
+    Point p2 = p1;
+    p2.x += cos(angle);
+    p2.y += sin(angle);
+    float t = float((v1->p1.x-p1.x)*(p1.y-p2.y)-(v1->p1.y-p1.y)*(p1.x-p2.x))/
+                ((v1->p1.x-v1->p2.x)*(p1.y-p2.y)-(v1->p1.y-v1->p2.y)*(p1.x-p2.x));
+    p2.x = float(v1->p1.x+t*(v1->p2.x-v1->p1.x));
+    p2.y = float(v1->p1.y+t*(v1->p2.y-v1->p1.y));
+    return p2;
 }
 
 void Vector::setMidPoint(){
