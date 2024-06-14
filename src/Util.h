@@ -84,3 +84,4 @@ Point intersectingPoint(Vector* v1, Vector* v2);
 Point intersectingPoint(Vector* v1, Point p, Point p1);
 Point intersectingPoint(Vector* v1, Point p1, float angle);
 bool isIntersectingSeg(Vector* v1, Point p1, float angle);
+bool isIntersectingSeg(Vector* v1, Point p1, Point p2);

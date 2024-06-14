@@ -58,41 +58,42 @@ void ScreenRenderer::renderFOV(queue<Vector*> vectorQueue){
 }
 
 bool ScreenRenderer::inFOV(Vector* vector){
-    Point position = player->getPosition();
+    Point playerPos = player->getPosition();
     float angle = player->getAngle();
     float lowerAngle = normalizeAngle(angle-fov);
     float upperAngle = normalizeAngle(angle+fov);
 
-    float p1Theta = normalizeAngle(atan2(vector->p1.y-position.y,vector->p1.x-position.x)); // angle for the point p1
-    float p2Theta = normalizeAngle(atan2(vector->p2.y-position.y,vector->p2.x-position.x)); // angle for the point p2
+    float p1Theta = normalizeAngle(atan2(vector->p1.y-playerPos.y,vector->p1.x-playerPos.x)); // angle for the point p1
+    float p2Theta = normalizeAngle(atan2(vector->p2.y-playerPos.y,vector->p2.x-playerPos.x)); // angle for the point p2
     
-    if(inAngleRange(p1Theta,lowerAngle,upperAngle) || inAngleRange(p2Theta,lowerAngle,upperAngle)){
+    if((inAngleRange(p1Theta,lowerAngle,upperAngle) || inAngleRange(p2Theta,lowerAngle,upperAngle)) && 
+        !(isIntersectingSeg(vector,playerPos,vector->normal))){
         // if the angle of p1 or p2 relative to the player is in the fov, draw
         return true;
-    }
-    if(isIntersectingSeg(vector,position,angle)){
+    }else if(isIntersectingSeg(vector,playerPos,angle) && !isIntersectingSeg(vector,playerPos,vector->normal)){
         // if both points of p1 and p2 are outside and there is a wall infront, draw
         return true;
+    }else{
+        return false;
     }
-    return false;
 }
 
 void ScreenRenderer::renderWall(Vector* vector){
-    Point position = player->getPosition();
+    Point playerPos = player->getPosition();
     float angle = player->getAngle();
     float hyp = pytha(screenDist,screenSizeX/2);
     float lowerAngle = normalizeAngle(angle-fov);
     float upperAngle = normalizeAngle(angle+fov);
     
-    Vector* screenVector = new Vector(position,position);
+    Vector* screenVector = new Vector(playerPos,playerPos);
     screenVector->p1.x += hyp*cos(lowerAngle);
     screenVector->p1.y += hyp*sin(lowerAngle);
     screenVector->p2.x += hyp*cos(upperAngle);
     screenVector->p2.y += hyp*sin(upperAngle);
     
     // gets the intersect of both end points to a vector and angle relative of the player
-    float thetaA = normalizeAngle(atan2(vector->p1.y-position.y,vector->p1.x-position.x));
-    float thetaB = normalizeAngle(atan2(vector->p2.y-position.y,vector->p2.x-position.x));
+    float thetaA = normalizeAngle(atan2(vector->p1.y-playerPos.y,vector->p1.x-playerPos.x));
+    float thetaB = normalizeAngle(atan2(vector->p2.y-playerPos.y,vector->p2.x-playerPos.x));
     
     // from the inital 2 points, the following will determine where the points end up on the
     // players fov projected on the screen
@@ -100,23 +101,23 @@ void ScreenRenderer::renderWall(Vector* vector){
         thetaA = lowerAngle;
         thetaB = upperAngle;
     }else if(inAngleRange(thetaA,lowerAngle,upperAngle) && !inAngleRange(thetaB,lowerAngle,upperAngle)){
-        if(isIntersectingSeg(vector,position,lowerAngle) && isIntersectingSeg(vector,position,upperAngle)){
+        if(isIntersectingSeg(vector,playerPos,lowerAngle) && isIntersectingSeg(vector,playerPos,upperAngle)){
             thetaA = lowerAngle;
             thetaB = upperAngle;
-        }else if(isIntersectingSeg(vector,position,lowerAngle)){
+        }else if(isIntersectingSeg(vector,playerPos,lowerAngle)){
             thetaB = lowerAngle;
-        }else if(isIntersectingSeg(vector,position,upperAngle)){
+        }else if(isIntersectingSeg(vector,playerPos,upperAngle)){
             thetaB = upperAngle;
         }else{
             thetaB = thetaA;
         }
     }else if(inAngleRange(thetaB,lowerAngle,upperAngle) && !inAngleRange(thetaA,lowerAngle,upperAngle)){
-        if(isIntersectingSeg(vector,position,lowerAngle) && isIntersectingSeg(vector,position,upperAngle)){
+        if(isIntersectingSeg(vector,playerPos,lowerAngle) && isIntersectingSeg(vector,playerPos,upperAngle)){
             thetaA = lowerAngle;
             thetaB = upperAngle;
-        }else if(isIntersectingSeg(vector,position,lowerAngle)){
+        }else if(isIntersectingSeg(vector,playerPos,lowerAngle)){
             thetaA = lowerAngle;
-        }else if(isIntersectingSeg(vector,position,upperAngle)){
+        }else if(isIntersectingSeg(vector,playerPos,upperAngle)){
             thetaA = upperAngle;
         }else{
             thetaA = thetaB;
@@ -223,7 +224,8 @@ void ScreenRenderer::clipWall(float lowerTheta, float upperTheta, Vector* vector
 
 void ScreenRenderer::clipWall(float lowerTheta, float upperTheta, Vector* vector, Vector* screenVector){
     RenderedSection* temp = new RenderedSection();
-    bool inPort = false;
+    bool inPortal = false;
+    bool isPortal = false;
     if(!renderedSection.empty()){
         for(RenderedSection* range:renderedSection){
             if(!inAngleRange(lowerTheta,range->t0,range->t1) && !inAngleRange(upperTheta,range->t0,range->t1)){
@@ -234,14 +236,9 @@ void ScreenRenderer::clipWall(float lowerTheta, float upperTheta, Vector* vector
                     return;
                 }
             }else if(inAngleRange(lowerTheta,range->t0,range->t1) && inAngleRange(upperTheta,range->t0,range->t1)){
-                if(range->portal){
-                    if(vector->portalingSector != -1 && (inRange(lowerTheta,range->t0,range->t0) && inRange(upperTheta,range->t1,range->t1))){
-                        return;
-                    }else{
-                        //cout << "portal data set from portal " << range->index << '\n';
-                        temp = range;
-                        inPort = true;
-                    }
+                if(range->portal){ // currently we are double rendering both front and back sides of a portal
+                    temp = range;
+                    inPortal = true;
                 }else{
                     return;
                 }
@@ -271,147 +268,150 @@ void ScreenRenderer::clipWall(float lowerTheta, float upperTheta, Vector* vector
                 }
             }
         }
-        /*
-        for(RenderedSection* range:renderedSection){
-            if(range->portal){
-                if(inAngleRange(lowerTheta,range->t0,range->t1) && inAngleRange(upperTheta,range->t0,range->t1)){
-                    //cout << "Rendered wall " << vector->vectorIndex << " is in a portal\n";
-                    temp = range;
-                    inPort = true;
-                }
-            }
-        }
-        */
     }
 
     Point position = player->getPosition();
     // point of where the vetors lie in the fov
-    Point p1 = intersectingPoint(vector,position,lowerTheta);
-    Point p2 = intersectingPoint(vector,position,upperTheta);
+    Point lowerPoint = intersectingPoint(vector,position,lowerTheta);
+    Point upperPoint = intersectingPoint(vector,position,upperTheta);
     
     // point where the vector lies on the projected screen infront of the player
     Point sp1 = intersectingPoint(screenVector,position,lowerTheta);
     Point sp2 = intersectingPoint(screenVector,position,upperTheta); 
     
-    // screen x position
-    float screenXA = pytha(sp1.x-screenVector->p1.x,sp1.y-screenVector->p1.y);
-    float screenXB = pytha(sp2.x-screenVector->p1.x,sp2.y-screenVector->p1.y); 
-    
-    // screen y position
-    float screenYA = (pytha(sp1.x-position.x,sp1.y-position.y)/
-                            pytha(p1.x-position.x,p1.y-position.y));
-    float screenYB = (pytha(sp2.x-position.x,sp2.y-position.y)/
-                            pytha(p2.x-position.x,p2.y-position.y));
+    float x0 = pytha(sp1.x-screenVector->p1.x,sp1.y-screenVector->p1.y);
+    float x1 = pytha(sp2.x-screenVector->p1.x,sp2.y-screenVector->p1.y);
+
+    float y0 = (pytha(sp1.x-position.x,sp1.y-position.y)/
+                            pytha(lowerPoint.x-position.x,lowerPoint.y-position.y));
+    float y1 = (pytha(sp2.x-position.x,sp2.y-position.y)/
+                            pytha(upperPoint.x-position.x,upperPoint.y-position.y));
+
+    Point* p0;
+    Point* p1;
+    if(getMinF(x0,x1) == x0){
+        p0 = new Point(x0,y0);
+        p1 = new Point(x1,y1);
+    }else{
+        p0 = new Point(x1,y1);
+        p1 = new Point(x0,y0);
+    }
 
     // get the heights of the sector that the vector belongs in
-    float floorY1 = sectorData.at(vector->sectorIndex)->floorHeight;
-    float ceilY1 = sectorData.at(vector->sectorIndex)->ceilHeight;
-
-    float x0 = getMinF(screenXA,screenXB);
-    float x1 = getMaxF(screenXA,screenXB)-1;
-    float y0;
-    float y1;
-    if(x0 == screenXA){
-        y0 = screenYA;
-        y1 = screenYB;
-    }else{
-        y0 = screenYB;
-        y1 = screenYA;
-    }
-    float slope = (y1-y0)/(x1-x0);
+    float floorY0 = sectorData.at(vector->sectorIndex)->floorHeight;
+    float ceilY0 = sectorData.at(vector->sectorIndex)->ceilHeight;
+    float slope = (p1->y-p0->y)/(p1->x-p0->x);
 
     SDL_SetRenderDrawColor(renderWindow,255,0,0,255);
-    if(vector->portalingSector != -1){
+    if(inPortal){
+        if(vector->portalingSector != -1){
+            float floorY1 = sectorData.at(vector->portalingSector)->floorHeight;
+            float ceilY1 = sectorData.at(vector->portalingSector)->ceilHeight;
+
+            SDL_SetRenderDrawColor(renderWindow,155,69,133,255);
+            drawWall(p0,p1,slope,getMaxF(floorY0,floorY1),-getMinF(floorY0,floorY1),temp);
+
+            SDL_SetRenderDrawColor(renderWindow,155,69,133,255);
+            drawWall(p0,p1,slope,-getMinF(ceilY0,ceilY1),getMax(ceilY0,ceilY1),temp);
+
+            if(floorY0-floorY1 < 0){
+                // draw to the lower 
+                SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+                drawWall(p0,p1,slope,screenSizeY/2*floorY1,-floorY1,temp);
+            }else{
+                // draw upper
+                SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+                drawWall(p0,p1,slope,screenSizeY/2*floorY0,-floorY0,temp);
+            }
+            if(ceilY0-ceilY1 > 0){
+                SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+                drawWall(p0,p1,slope,-ceilY1,screenSizeY/2*ceilY1,temp);
+            }else{
+                SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+                drawWall(p0,p1,slope,-ceilY0,screenSizeY/2*ceilY0,temp);
+            }
+            floorY0 = getMinF(floorY0,floorY1);
+            ceilY0 = getMinF(ceilY0,ceilY1);
+            isPortal = true;
+        }else{
+            drawWall(p0,p1,slope,floorY0,ceilY0,temp);
+            SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+            drawWall(p0,p1,slope,screenSizeY/2*floorY0,-floorY0,temp);
+
+            SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+            drawWall(p0,p1,slope,-ceilY0,screenSizeY/2*ceilY0,temp);
+        }
+    }else if(vector->portalingSector != -1){
         // get the height of the portaling sector the vector portals with
-        float floorY2 = sectorData.at(vector->portalingSector)->floorHeight;
-        float ceilY2 = sectorData.at(vector->portalingSector)->ceilHeight;
+        float floorY1 = sectorData.at(vector->portalingSector)->floorHeight;
+        float ceilY1 = sectorData.at(vector->portalingSector)->ceilHeight;
 
         SDL_SetRenderDrawColor(renderWindow,155,69,133,255);
-        drawWall(x0,x1,y0,y1,getMaxF(floorY1,floorY2),-getMinF(floorY1,floorY2));
-
+        drawWall(p0,p1,slope,getMaxF(floorY0,floorY1),-getMinF(floorY0,floorY1));
 
         SDL_SetRenderDrawColor(renderWindow,155,69,133,255);
-        drawWall(x0,x1,y0,y1,-getMinF(ceilY1,ceilY2),getMax(ceilY1,ceilY2));
-        /*
-        SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-        drawWall(x0,x1,y0,y1,screenSizeY/2*floorY1,-floorY1,temp);
-
-        SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-        drawWall(x0,x1,y0,y1,-ceilY1,screenSizeY/2*ceilY1,temp);
-        */
-        //cout << "Added wall " << vector->vectorIndex << "\n";
-        renderedSection.push_back(
-            new RenderedSection(lowerTheta,upperTheta,x0,y0,slope,getMinF(floorY1,floorY2),getMinF(ceilY1,ceilY2),true)
-        );
-        return;
-    }else if(inPort){
-        //cout << "in portal\n";
-        drawWall(x0,x1,y0,y1,floorY1,ceilY1,temp);
-
-        /*
-        SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-        drawWall(x0,x1,y0,y1,screenSizeY/2*floorY1,-floorY1,temp);
-
-        SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-        drawWall(x0,x1,y0,y1,-ceilY1,screenSizeY/2*ceilY1,temp);
-        */
+        drawWall(p0,p1,slope,-getMinF(ceilY0,ceilY1),getMax(ceilY0,ceilY1));
+        if(floorY0-floorY1 < 0){
+            SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+            drawWall(p0,p1,slope,screenSizeY/2*floorY1,-floorY1,temp);
+        }else{
+            SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+            drawWall(p0,p1,slope,screenSizeY/2*floorY0,-floorY0,temp);
+        }
+        if(ceilY0-ceilY1 < 0){
+            SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+            drawWall(p0,p1,slope,-ceilY1,screenSizeY/2*ceilY1,temp);
+        }else{
+            SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
+            drawWall(p0,p1,slope,-ceilY0,screenSizeY/2*ceilY0,temp);
+        }
+        floorY0 = getMinF(floorY0,floorY1);
+        ceilY0 = getMinF(ceilY0,ceilY1);
+        isPortal = true;
     }else{
-        drawWall(x0,x1,y0,y1,floorY1,ceilY1);
-        /*
+        drawWall(p0,p1,slope,floorY0,ceilY0);
         SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-        drawWall(x0,x1,y0,y1,screenSizeY/2*floorY1,-floorY1);
+        drawWall(p0,p1,slope,screenSizeY/2*floorY0,-floorY0);
 
         SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-        drawWall(x0,x1,y0,y1,-ceilY1,screenSizeY/2*ceilY1);
-        */
+        drawWall(p0,p1,slope,-ceilY0,screenSizeY/2*ceilY0);
     }
     renderedSection.push_back(
-        new RenderedSection(lowerTheta,upperTheta,x0,y0,slope,floorY1,ceilY1,false)
+        new RenderedSection(lowerTheta,upperTheta,x0,y0,slope,floorY0,ceilY0,isPortal)
     );
-    
-    //SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-    //drawWall(x0,x1,y0,y1,screenSizeY/2*floorHeight,-floorHeight);
-
-    //SDL_SetRenderDrawColor(renderWindow,66,12,200,255);
-    //drawWall(x0,x1,y0,y1,-ceilHeight,screenSizeY/2*ceilHeight);
-    //cout << "Added wall " << vector->vectorIndex << "\n";
 }
 
 // with the use of linear interpolation, draws a filled wall from given values
-void ScreenRenderer::drawWall(float x0, float x1, float y0, float y1, float floor, float ceiling){
-    float yScaler;
-    float yf;
-    float yc;
-    for(int x = x0; x < x1; x++){
-        yScaler = y0+(y1-y0)/(x1-x0)*(x-x0);
-        if(yScaler > getMaxF(y0,y1)){
-            yScaler = getMaxF(y0,y1);
+void ScreenRenderer::drawWall(Point* p0, Point* p1, float slope, float floor, float ceiling){
+    for(int x = p0->x; x < p1->x; x++){
+        float yScaler = p0->y+slope*(x-p0->x);
+        if(yScaler > getMaxF(p0->y,p1->y)){
+            yScaler = getMaxF(p0->y,p1->y);
         }
-        if(yScaler < getMinF(y0,y1)){
-            yScaler = getMinF(y0,y1);
+        if(yScaler < getMinF(p0->y,p1->y)){
+            yScaler = getMinF(p0->y,p1->y);
         }
-        yf = screenSizeY/2-yScaler*ceiling; // ceiling height
-        yc = screenSizeY/2+yScaler*floor; // floor height
+        float yf = screenSizeY/2-yScaler*ceiling; // ceiling height
+        float yc = screenSizeY/2+yScaler*floor; // floor height
         SDL_RenderDrawLine(renderWindow,x,yf,x,yc);
     }
-    
+    /*
     SDL_SetRenderDrawColor(renderWindow,255,255,255,255);
-    SDL_RenderDrawLine(renderWindow,x0,screenSizeY/2-y0*ceiling,
-                        x0,screenSizeY/2+y0*floor);
-    SDL_RenderDrawLine(renderWindow,x1,screenSizeY/2-y1*ceiling,
-                        x1,screenSizeY/2+y1*floor);
-                        
+    SDL_RenderDrawLine(renderWindow,p0->x,screenSizeY/2-p0->y*ceiling,
+                        p0->x,screenSizeY/2+p0->y*floor);
+    SDL_RenderDrawLine(renderWindow,p1->x,screenSizeY/2-p1->y*ceiling,
+                        p1->x,screenSizeY/2+p1->y*floor);
+    */                  
 }   
 
-void ScreenRenderer::drawWall(float x0, float x1, float y0, float y1, float floor, float ceiling, RenderedSection* portalingSector){
-    float slope = (y1-y0)/(x1-x0);
-    for(int x = x0; x < x1; x++){
-        float yScaler = y0+slope*(x-x0);
-        if(yScaler > getMaxF(y0,y1)){
-            yScaler = getMaxF(y0,y1);
+void ScreenRenderer::drawWall(Point* p0, Point* p1, float slope, float floor, float ceiling, RenderedSection* portalingSector){
+    for(int x = p0->x; x < p1->x; x++){
+        float yScaler = p0->y+slope*(x-p0->x);
+        if(yScaler > getMaxF(p0->y,p1->y)){
+            yScaler = getMaxF(p0->y,p1->y);
         }
-        if(yScaler < getMinF(y0,y1)){
-            yScaler = getMinF(y0,y1);
+        if(yScaler < getMinF(p0->y,p1->y)){
+            yScaler = getMinF(p0->y,p1->y);
         }
         float yc = screenSizeY/2-yScaler*ceiling; // ceiling height
         float yf = screenSizeY/2+yScaler*floor; // floor height
@@ -425,21 +425,24 @@ void ScreenRenderer::drawWall(float x0, float x1, float y0, float y1, float floo
         if(yf > yf2){
             yf = yf2;
         }
-        SDL_RenderDrawLine(renderWindow,x,yc,
+        if(yc < yf){
+            SDL_RenderDrawLine(renderWindow,x,yc,
                             x,yf);
+        }
     }
+    /*
     SDL_SetRenderDrawColor(renderWindow,255,255,255,255);
-    float yScaler = y0+slope*(x0-x0);
-    if(yScaler > getMaxF(y0,y1)){
-        yScaler = getMaxF(y0,y1);
+    float yScaler = p0->y;
+    if(yScaler > getMaxF(p0->y,p1->y)){
+        yScaler = getMaxF(p0->y,p1->y);
     }
-    if(yScaler < getMinF(y0,y1)){
-        yScaler = getMinF(y0,y1);
+    if(yScaler < getMinF(p0->y,p1->y)){
+        yScaler = getMinF(p0->y,p1->y);
     }
     float yc = screenSizeY/2-yScaler*ceiling; // ceiling height
     float yf = screenSizeY/2+yScaler*floor; // floor height
 
-    float y2Scaler = portalingSector->y0+portalingSector->slope*(x0-portalingSector->x0);
+    float y2Scaler = portalingSector->y0+portalingSector->slope*(p0->x-portalingSector->x0);
     float yc2 = screenSizeY/2-y2Scaler*portalingSector->ceiling;
     float yf2 = screenSizeY/2+y2Scaler*portalingSector->floor;
     if(yc < yc2){
@@ -448,23 +451,24 @@ void ScreenRenderer::drawWall(float x0, float x1, float y0, float y1, float floo
     if(yf > yf2){
         yf = yf2;
     }
-    SDL_RenderDrawLine(renderWindow,x0,yc,
-                        x0,yf);
-
-    SDL_RenderDrawLine(renderWindow,x0,screenSizeY/2-(portalingSector->y0+portalingSector->slope*(x0-portalingSector->x0))*portalingSector->ceiling,
-                        x1,screenSizeY/2-(portalingSector->y0+portalingSector->slope*(x1-portalingSector->x0))*portalingSector->ceiling);
-
-    yScaler = y0+slope*(x1-x0);
-    if(yScaler > getMaxF(y0,y1)){
-        yScaler = getMaxF(y0,y1);
+    if(yc < yf){
+        SDL_RenderDrawLine(renderWindow,p0->x,yc,
+                            p0->x,yf);
     }
-    if(yScaler < getMinF(y0,y1)){
-        yScaler = getMinF(y0,y1);
+    SDL_RenderDrawLine(renderWindow,p0->x,screenSizeY/2-(portalingSector->y0+portalingSector->slope*(p0->x-portalingSector->x0))*portalingSector->ceiling,
+                        p1->x,screenSizeY/2-(portalingSector->y0+portalingSector->slope*(p1->x-portalingSector->x0))*portalingSector->ceiling);
+
+    yScaler = p0->y+slope*(p1->x-p0->x);
+    if(yScaler > getMaxF(p0->y,p1->y)){
+        yScaler = getMaxF(p0->y,p1->y);
+    }
+    if(yScaler < getMinF(p0->y,p1->y)){
+        yScaler = getMinF(p0->y,p1->y);
     }
     yc = screenSizeY/2-yScaler*ceiling; // ceiling height
     yf = screenSizeY/2+yScaler*floor; // floor height
 
-    y2Scaler = portalingSector->y0+portalingSector->slope*(x1-portalingSector->x0);
+    y2Scaler = portalingSector->y0+portalingSector->slope*(p1->x-portalingSector->x0);
     yc2 = screenSizeY/2-y2Scaler*portalingSector->ceiling;
     yf2 = screenSizeY/2+y2Scaler*portalingSector->floor;
     if(yc < yc2){
@@ -473,17 +477,20 @@ void ScreenRenderer::drawWall(float x0, float x1, float y0, float y1, float floo
     if(yf > yf2){
         yf = yf2;
     }
-    SDL_RenderDrawLine(renderWindow,x1,yc,
-                        x1,yf);
-    SDL_RenderDrawLine(renderWindow,x0,screenSizeY/2+(portalingSector->y0+portalingSector->slope*(x0-portalingSector->x0))*portalingSector->floor,
-                        x1,screenSizeY/2+(portalingSector->y0+portalingSector->slope*(x1-portalingSector->x0))*portalingSector->floor);
-    /*
+    if(yc < yf){
+        SDL_RenderDrawLine(renderWindow,p1->x,yc,
+                            p1->x,yf);
+    }
+    SDL_RenderDrawLine(renderWindow,p0->x,screenSizeY/2+(portalingSector->y0+portalingSector->slope*(p0->x-portalingSector->x0))*portalingSector->floor,
+                        p1->x,screenSizeY/2+(portalingSector->y0+portalingSector->slope*(p1->x-portalingSector->x0))*portalingSector->floor);
+    
     SDL_SetRenderDrawColor(renderWindow,255,255,255,255);
     SDL_RenderDrawLine(renderWindow,x0,screenSizeY/2-y0*ceiling,
                         x0,screenSizeY/2+y0*floor);
     SDL_RenderDrawLine(renderWindow,x1,screenSizeY/2-y1*ceiling,
                         x1,screenSizeY/2+y1*floor);
-                        */
+                        
+                       */
                         
 }
 

@@ -101,6 +101,7 @@ Point intersectingPoint(Vector* v1, Point p1, float angle){
     return p2;
 }
 
+// need to add more info about this function since its different
 bool isIntersectingSeg(Vector* v1, Point p1, float angle){
     Point p2 = p1;
     p2.x += cos(angle);
@@ -116,6 +117,14 @@ bool isIntersectingSeg(Vector* v1, Point p1, float angle){
     
     float theta = normalizeAngle(atan2(y-p1.y,x-p1.x));
     return inRange(t,0,1) && inAngleRange(theta,angle,angle);
+}
+
+bool isIntersectingSeg(Vector* v1, Point p1, Point p2){
+    float t = float(((v1->p1.x-p1.x)*(p1.y-p2.y)-(v1->p1.y-p1.y)*(p1.x-p2.x))/
+                    ((v1->p1.x-v1->p2.x)*(p1.y-p2.y)-(v1->p1.y-v1->p2.y)*(p1.x-p2.x)));
+    float u = float(-((v1->p1.x-v1->p2.x)*(v1->p1.y-p1.y)-(v1->p1.y-v1->p2.y)*(v1->p1.x-p1.x))/
+                ((v1->p1.x-v1->p2.x)*(p1.y-p2.y)-(v1->p1.y-v1->p2.y)*(p1.x-p2.x)));
+    return inRange(t,0,1) && inRange(u,0,1);
 }
 
 void Vector::setMidPoint(){

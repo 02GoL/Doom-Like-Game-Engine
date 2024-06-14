@@ -18,7 +18,7 @@ class ScreenRenderer{
         void renderFOV(queue<Vector*> renderQueue);
         bool inFOV(Vector* vector);
         void renderWall(Vector* vector);
-        void drawWall(float x1, float x2, float y1, float y2, float floor, float ceiling);
-        void drawWall(float x0, float x1, float y0, float y1, float floor, float ceiling, RenderedSection* portal);
+        void drawWall(Point* p0, Point* p1, float slope, float floor, float ceiling);
+        void drawWall(Point* p0, Point* p1, float slope, float floor, float ceiling, RenderedSection* portal);
         void clipWall(float lowerTheta, float upperTheta, Vector* vector, Vector* screenVector);
 };
