@@ -3,9 +3,9 @@ A game engine based on the Doom and Quake engine that renders 3d graphics from v
 
 Currently work in progress
 
-![Image 1 of engine render](/Img/Img1.PNG)
-![Image 2 of engine render](/Img/Img2.PNG)
-![Image 2 of engine render](/Img/Img3.PNG)
+![Image 1 of engine render](/Img/Img1.PNG =300x)
+![Image 2 of engine render](/Img/Img2.PNG =300x)
+![Image 2 of engine render](/Img/Img3.PNG =300x)
 
 ## Dependencies
 -Windows 10
