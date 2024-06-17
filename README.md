@@ -8,8 +8,8 @@ Currently work in progress
 ![Image 3 of engine render](/Img/Img3.PNG)
 
 ## Dependencies
--Windows 10
--SDL2
+- Windows 10
+- SDL2
 
 ## Resources
 -https://wiki.libsdl.org/SDL2/FrontPage
